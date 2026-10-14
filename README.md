@@ -31,7 +31,7 @@
 ## Cloudflare Pages 빌드 설정
 
 - Framework preset: Astro
-- Build command: `npm run build`
+- Build command: `npm run build` (검색 색인은 빌드 과정에서 자동 생성)
 - Build output directory: `dist`
 - 환경변수: `NODE_VERSION` = `22`
 
