@@ -1,7 +1,7 @@
 ---
 title: 이 사이트를 만든 이유
 slug: hello
-description: 법과 금융, 소리와 빛 — 서로 달라 보이는 일들을 한곳에 모아 두려고 합니다.
+description: 그런건 없습니다.
 date: 2026-12-01
 category: 에세이
 draft: false
