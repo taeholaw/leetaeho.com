@@ -64,7 +64,7 @@ const person = {
   <body>
     <header class="site-header">
       <div class="wrap">
-        <a class="site-name" href="/">{SITE.name}</a>
+        <a class="site-name" href="/">{SITE.title}</a>
         <nav class="site-nav" aria-label="주 메뉴">
           {NAV.filter((n) => n.href !== '/').map((n) => (
             <a href={n.href} aria-current={isCurrent(n.href) ? 'page' : undefined}>{n.label}</a>
