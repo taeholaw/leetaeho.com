@@ -5,7 +5,7 @@ export const SITE = {
   nameEn: 'Taeho Lee',
   title: '이태호닷컴',
   tagline: '구조를 설계합니다 — 법, 금융, 소리, 빛',
-  description: '변호사 이태호의 개인 사이트',
+  description: '변호사 이태호 a.k.a 에네스티의 개인 사이트',
   email: 'taeholaw@gmail.com',
   newsletter: 'https://maily.so/leetaeho',
   links: [
