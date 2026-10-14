@@ -1,0 +1,32 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getWorks } from '../../lib/posts';
+
+const works = await getWorks();
+const kinds = ['음악', '사진', '영상'] as const;
+---
+<Base title="Work" description="이태호의 작업 — 음악, 사진, 영상.">
+  <h1>Work</h1>
+  <p class="lede">음악과 사진, 영상 작업을 모아 둡니다.</p>
+  {kinds.map((k) => {
+    const items = works.filter((w) => w.data.kind === k);
+    return items.length > 0 && (
+      <>
+        <h2 class="section-label">{k}</h2>
+        <ul class="works">
+          {items.map((w) => (
+            <li>
+              <a href={`/work/${w.id}/`}>
+                {w.data.cover && <img src={w.data.cover} alt="" loading="lazy" />}
+                <h2>{w.data.title}</h2>
+              </a>
+              <span class="meta">{w.data.date.getFullYear()}</span>
+              {w.data.description && <p>{w.data.description}</p>}
+            </li>
+          ))}
+        </ul>
+      </>
+    );
+  })}
+  {!works.length && <p class="meta">아직 올린 작업이 없습니다.</p>}
+</Base>

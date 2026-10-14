@@ -1,0 +1,92 @@
+---
+import '../styles/global.css';
+import { SITE, NAV } from '../site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  date?: Date;
+  jsonLd?: Record<string, unknown>;
+}
+
+const { title, description = SITE.description, image, type = 'website', date, jsonLd } = Astro.props;
+const fullTitle = title ? `${title} | ${SITE.name} 변호사` : SITE.title;
+const canonical = new URL(Astro.url.pathname, SITE.url).href;
+const ogImage = image ? new URL(image, SITE.url).href : undefined;
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE.name,
+  alternateName: SITE.nameEn,
+  jobTitle: '변호사',
+  url: SITE.url,
+  sameAs: SITE.links.map((l) => l.href),
+};
+---
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — 글`} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title ?? SITE.title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="ko_KR" />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    {date && <meta property="article:published_time" content={date.toISOString()} />}
+
+    <!-- 네이버 서치어드바이저 인증 태그를 받으면 아래에 넣습니다 -->
+    <!-- <meta name="naver-site-verification" content="..." /> -->
+
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd ?? person)} />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="site-name" href="/">{SITE.name}</a>
+        <nav class="site-nav" aria-label="주 메뉴">
+          {NAV.filter((n) => n.href !== '/').map((n) => (
+            <a href={n.href} aria-current={isCurrent(n.href) ? 'page' : undefined}>{n.label}</a>
+          ))}
+        </nav>
+      </div>
+    </header>
+    <main>
+      <div class="wrap">
+        <slot />
+      </div>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>© {new Date().getFullYear()} {SITE.name}</span>
+        <nav aria-label="보조 메뉴">
+          <a href="/search/">검색</a>
+          <a href={SITE.newsletter} rel="noopener">뉴스레터</a>
+          <a href="/rss.xml">RSS</a>
+          <a href={`mailto:${SITE.email}`}>메일</a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>

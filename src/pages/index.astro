@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import PostList from '../components/PostList.astro';
+import { getPosts, getWorks } from '../lib/posts';
+import { SITE } from '../site';
+
+const posts = (await getPosts()).slice(0, 5);
+const works = (await getWorks()).slice(0, 3);
+---
+<Base>
+  <p class="intro">{SITE.tagline}</p>
+  <p>
+    변호사로 일하며 계약과 금융의 구조를 짜고, 쉬는 시간에는 곡을 만들고 사진을 찍습니다.
+    이곳에는 그 일들에 대해 쓴 글과 만든 것들을 모아 둡니다.{' '}
+    <a href="/about/">더 보기</a>
+  </p>
+
+  <h2 class="section-label">최근 글</h2>
+  {posts.length ? <PostList posts={posts} /> : <p class="meta">아직 글이 없습니다.</p>}
+  <a class="more" href="/writing/">모든 글 →</a>
+
+  {works.length > 0 && (
+    <>
+      <h2 class="section-label">최근 작업</h2>
+      <ul class="list">
+        {works.map((w) => (
+          <li>
+            <a href={`/work/${w.id}/`}>{w.data.title}</a>
+            <span class="meta">{w.data.kind} · {w.data.date.getFullYear()}</span>
+          </li>
+        ))}
+      </ul>
+      <a class="more" href="/work/">모든 작업 →</a>
+    </>
+  )}
+</Base>

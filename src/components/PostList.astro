@@ -1,0 +1,23 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { fmtDate, isoDate } from '../lib/posts';
+
+interface Props {
+  posts: CollectionEntry<'writing'>[];
+  showDesc?: boolean;
+  showCategory?: boolean;
+}
+const { posts, showDesc = false, showCategory = true } = Astro.props;
+---
+<ul class="list">
+  {posts.map((p) => (
+    <li>
+      <a href={`/writing/${p.id}/`}>{p.data.title}</a>
+      <span class="meta">
+        {showCategory && <>{p.data.category} · </>}
+        <time datetime={isoDate(p.data.date)}>{fmtDate(p.data.date)}</time>
+      </span>
+      {showDesc && p.data.description && <span class="desc">{p.data.description}</span>}
+    </li>
+  ))}
+</ul>

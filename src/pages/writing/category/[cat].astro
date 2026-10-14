@@ -1,0 +1,24 @@
+---
+import Base from '../../../layouts/Base.astro';
+import PostList from '../../../components/PostList.astro';
+import { getPosts } from '../../../lib/posts';
+import { CATEGORIES, categorySlug } from '../../../site';
+
+export async function getStaticPaths() {
+  return CATEGORIES.map((c) => ({ params: { cat: categorySlug(c) }, props: { category: c } }));
+}
+
+const { category } = Astro.props;
+const posts = (await getPosts()).filter((p) => p.data.category === category);
+---
+<Base title={category} description={`이태호의 글 — ${category}`}>
+  <h1>Writing</h1>
+  <nav class="filters" aria-label="카테고리">
+    <a href="/writing/">전체</a>
+    {CATEGORIES.map((c) => (
+      <a href={`/writing/category/${categorySlug(c)}/`} aria-current={c === category ? 'page' : undefined}>{c}</a>
+    ))}
+  </nav>
+  <div style="height: 24px"></div>
+  {posts.length ? <PostList posts={posts} showDesc showCategory={false} /> : <p class="meta">아직 글이 없습니다.</p>}
+</Base>

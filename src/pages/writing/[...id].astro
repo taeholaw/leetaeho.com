@@ -1,0 +1,66 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getPosts, fmtDate, isoDate } from '../../lib/posts';
+import { SITE, categorySlug } from '../../site';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { id: post.id },
+    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}
+
+const { post, newer, older } = Astro.props;
+const { Content } = await render(post);
+const d = post.data;
+const isPractice = d.category === '실무 노트' || d.category === 'AI × 법무';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: d.title,
+  description: d.description,
+  datePublished: d.date.toISOString(),
+  dateModified: (d.updated ?? d.date).toISOString(),
+  author: { '@type': 'Person', name: SITE.name, url: SITE.url },
+  image: d.cover ? new URL(d.cover, SITE.url).href : undefined,
+  mainEntityOfPage: new URL(`/writing/${post.id}/`, SITE.url).href,
+  inLanguage: 'ko',
+};
+---
+<Base title={d.title} description={d.description} image={d.cover} type="article" date={d.date} jsonLd={jsonLd}>
+  <article data-pagefind-body>
+    <header class="post-head">
+      <h1>{d.title}</h1>
+      <p class="meta">
+        <a href={`/writing/category/${categorySlug(d.category)}/`}>{d.category}</a>{' · '}
+        <time datetime={isoDate(d.date)}>{fmtDate(d.date)}</time>
+        {d.updated && <> · 수정 {fmtDate(d.updated)}</>}
+      </p>
+    </header>
+    {d.cover && (
+      <figure class="cover"><img src={d.cover} alt="" loading="eager" /></figure>
+    )}
+    <div class="prose">
+      <Content />
+    </div>
+    {isPractice && (
+      <p class="notice">
+        이 글은 일반적인 정보 제공을 목적으로 하며, 개별 사안에 대한 법률자문이 아닙니다.
+        구체적인 사안은 별도의 법률 상담을 받으시기 바랍니다.
+      </p>
+    )}
+  </article>
+
+  <aside class="subscribe">
+    <p>새 글이 올라오면 메일로 알려 드립니다.</p>
+    <a href={SITE.newsletter} rel="noopener">뉴스레터 구독하기 →</a>
+  </aside>
+
+  <nav class="pager" aria-label="이전·다음 글">
+    {older ? <a href={`/writing/${older.id}/`}>← {older.data.title}</a> : <span></span>}
+    {newer ? <a href={`/writing/${newer.id}/`} style="text-align:right">{newer.data.title} →</a> : <span></span>}
+  </nav>
+</Base>

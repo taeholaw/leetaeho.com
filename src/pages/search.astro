@@ -1,0 +1,45 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="검색" description="leetaeho.com 글 검색">
+  <h1>검색</h1>
+  <div class="search-box">
+    <input id="q" type="search" placeholder="검색어를 입력하세요" autocomplete="off" />
+  </div>
+  <ul class="list" id="results" style="margin-top:24px"></ul>
+  <p class="meta" id="status"></p>
+
+  <script is:inline>
+    (async () => {
+      const q = document.getElementById('q');
+      const out = document.getElementById('results');
+      const status = document.getElementById('status');
+      let pagefind;
+      try {
+        pagefind = await import('/pagefind/pagefind.js');
+        await pagefind.init();
+      } catch (e) {
+        status.textContent = '검색은 사이트 배포 후 사용할 수 있습니다.';
+        return;
+      }
+      const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      let t;
+      q.addEventListener('input', () => {
+        clearTimeout(t);
+        t = setTimeout(async () => {
+          const term = q.value.trim();
+          out.innerHTML = '';
+          status.textContent = '';
+          if (!term) return;
+          const res = await pagefind.search(term);
+          const items = await Promise.all(res.results.slice(0, 20).map((r) => r.data()));
+          if (!items.length) { status.textContent = '검색 결과가 없습니다.'; return; }
+          out.innerHTML = items.map((d) =>
+            `<li><a href="${d.url}">${esc(d.meta.title || d.url)}</a><span class="desc">${d.excerpt}</span></li>`
+          ).join('');
+        }, 200);
+      });
+      q.focus();
+    })();
+  </script>
+</Base>

@@ -1,0 +1,23 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getPosts } from '../../lib/posts';
+import { CATEGORIES, categorySlug } from '../../site';
+
+const posts = await getPosts();
+const years = [...new Set(posts.map((p) => p.data.date.getFullYear()))];
+---
+<Base title="Writing" description="이태호가 쓴 글 — 실무 노트, AI × 법무, 에세이.">
+  <h1>Writing</h1>
+  <nav class="filters" aria-label="카테고리">
+    <a href="/writing/" aria-current="page">전체</a>
+    {CATEGORIES.map((c) => <a href={`/writing/category/${categorySlug(c)}/`}>{c}</a>)}
+  </nav>
+  {years.map((y) => (
+    <>
+      <h2 class="year">{y}</h2>
+      <PostList posts={posts.filter((p) => p.data.date.getFullYear() === y)} showDesc />
+    </>
+  ))}
+  {!posts.length && <p class="meta">아직 글이 없습니다.</p>}
+</Base>
