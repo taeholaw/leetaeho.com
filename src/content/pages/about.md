@@ -18,4 +18,4 @@ description: 변호사 이태호 소개 — 부동산금융·법률 실무, 음�
 
 ## 연락
 
-기고·강연·협업 제안은 [hello@leetaeho.com](mailto:hello@leetaeho.com)으로 보내 주십시오. 새 글 소식은 [뉴스레터](https://maily.so/leetaeho)나 [RSS](/rss.xml)로 받아 보실 수 있습니다.
+기고·강연·협업 제안은 [taeholaw@gmail.com](mailto:taeholaw@gmail.com)으로 보내 주십시오. 새 글 소식은 [뉴스레터](https://maily.so/leetaeho)나 [RSS](/rss.xml)로 받아 보실 수 있습니다.
