@@ -10,7 +10,8 @@
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.8",
-    "pagefind": "^1.5.2"
+    "pagefind": "^1.5.2",
+    "sharp": "^0.35.5"
   },
   "type": "module",
   "private": true

@@ -73,10 +73,11 @@ h1 { font-size: 30px; margin: 0 0 12px; text-wrap: balance; }
 .prose hr { border: 0; border-top: 1px solid var(--rule); margin: 3em 0; }
 .prose a { color: var(--accent); text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); }
 .prose img { display: block; max-width: 100%; height: auto; margin: 2em auto; border-radius: 2px; }
-.prose img:has(+ em) { margin-bottom: 0; }
+.prose picture { display: block; }
+.prose img:has(+ em), .prose picture:has(+ em) img { margin-bottom: 0; }
 .prose figure { margin: 2em 0; }
 .prose figure img { margin: 0 auto; }
-.prose figcaption, .prose img + em { display: block; text-align: center; font-size: 14px; color: var(--ink-3); margin: 0.7em 0 2em; }
+.prose figcaption, .prose img + em, .prose picture + em { display: block; text-align: center; font-size: 14px; color: var(--ink-3); margin: 0.7em 0 2em; }
 .prose table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 0 0 1.6em; display: block; overflow-x: auto; }
 .prose th, .prose td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
 .prose th { font-weight: 600; border-bottom-color: var(--ink-3); }

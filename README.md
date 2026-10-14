@@ -21,7 +21,7 @@
 - 색·글꼴·여백: `src/styles/global.css`
 - 글: `src/content/writing/*.md`
 - 작업: `src/content/work/*.md`
-- 사진: `public/images/uploads/`
+- 사진: `public/images/uploads/` — 빌드 때 자동으로 최대 가로 2000px로 압축되고, 화면 크기별 WebP(800·1400·2000px)가 만들어집니다 (`integrations/optimize-images.mjs`). 저장소의 원본은 그대로 남으니 카메라 원본(10MB 이상)은 올리지 않습니다.
 
 ## 글 규칙
 
