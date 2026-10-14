@@ -1,0 +1,4271 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
+<title>글쓰기 · 이태호닷컴</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/write/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/write/icon-192.png">
+<!--
+  이태호닷컴 글쓰기 도구
+  - 인터넷 없이 쓰고, 글과 사진은 이 브라우저 안(IndexedDB)에 자동 저장됩니다.
+  - 발행할 때만 인터넷이 필요합니다: GitHub에 글(.md)과 사진을 한 번에 올리면 1~2분 뒤 사이트에 반영됩니다.
+  - 아래쪽 <script> 중 marked·turndown은 마크다운 변환 라이브러리(MIT)를 그대로 넣은 것입니다.
+-->
+<style>
+:root {
+  --bg: #fbfaf7; --ink: #1b1b1a; --ink-2: #5b5a56; --ink-3: #8d8b85; --rule: #e4e1da;
+  --accent: #23439e; --code-bg: #f1efe9; --panel: #ffffff; --warn: #a3410e; --ok: #2f6b3a;
+  --sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  --serif: 'Noto Serif KR', 'Nanum Myeongjo', 'AppleMyungjo', 'Batang', serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #141413; --ink: #ecebe6; --ink-2: #aeaca5; --ink-3: #7c7a74; --rule: #2c2b29; --accent: #8fa8f2; --code-bg: #1e1e1c; --panel: #1b1b1a; --warn: #f0a070; --ok: #8fd09a; }
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.7; word-break: keep-all; overflow-wrap: break-word; -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+
+/* 상단 막대 */
+.top { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--rule); padding-top: env(safe-area-inset-top); }
+.top-in { max-width: 860px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+.brand { font-family: var(--serif); font-weight: 600; font-size: 16px; white-space: nowrap; }
+.status { font-size: 13px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+.status .off { color: var(--warn); }
+.btn { border: 1px solid var(--rule); background: transparent; border-radius: 6px; padding: 6px 12px; font-size: 14px; line-height: 1.4; white-space: nowrap; }
+.btn:hover { border-color: var(--ink-3); }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn.primary:hover { opacity: .88; }
+.btn.ghost { border-color: transparent; }
+.btn:disabled { opacity: .45; cursor: default; }
+
+/* 서식 막대 */
+.tools { max-width: 860px; margin: 0 auto; padding: 0 12px 8px; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.tools::-webkit-scrollbar { display: none; }
+.tools button { border: 0; background: transparent; padding: 5px 9px; border-radius: 5px; font-size: 14px; color: var(--ink-2); white-space: nowrap; }
+.tools button:hover { background: var(--code-bg); color: var(--ink); }
+.tools button.on { background: var(--code-bg); color: var(--ink); }
+.tools .sep { width: 1px; background: var(--rule); margin: 4px 6px; flex: none; }
+.tools .src { margin-left: auto; }
+
+/* 본문 영역 */
+.page { max-width: 760px; margin: 0 auto; padding: 28px 20px 140px; }
+.title { width: 100%; border: 0; outline: none; background: transparent; font-family: var(--serif); font-weight: 600; font-size: 30px; line-height: 1.4; letter-spacing: -0.015em; padding: 0; resize: none; overflow: hidden; }
+.title::placeholder, .ed:empty::before { color: var(--ink-3); }
+.metarow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 10px 0 6px; font-size: 14px; color: var(--ink-2); }
+.metarow select, .metarow input[type=date] { border: 1px solid var(--rule); background: transparent; border-radius: 6px; padding: 4px 8px; font-size: 14px; }
+.metarow label { display: inline-flex; align-items: center; gap: 6px; }
+.linkish { border: 0; background: none; padding: 0; color: var(--ink-2); font-size: 14px; text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: .2em; }
+.more { border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin: 10px 0 0; display: grid; gap: 12px; font-size: 14px; }
+.more label { display: grid; gap: 4px; color: var(--ink-2); }
+.more input[type=text], .more textarea { border: 1px solid var(--rule); background: transparent; border-radius: 6px; padding: 7px 10px; font-size: 15px; color: var(--ink); width: 100%; }
+.more textarea { min-height: 64px; resize: vertical; }
+.more .hint { font-size: 12.5px; color: var(--ink-3); }
+.cover-pick { display: flex; align-items: center; gap: 10px; }
+.cover-pick img { width: 72px; height: 48px; object-fit: cover; border-radius: 4px; border: 1px solid var(--rule); }
+hr.div { border: 0; border-top: 1px solid var(--rule); margin: 18px 0 26px; }
+
+/* 편집기 — 사이트 본문과 같은 모양 */
+.ed { outline: none; min-height: 50vh; font-size: 17.5px; line-height: 1.8; caret-color: var(--accent); }
+.ed:empty::before { content: '여기에 본문을 쓰십시오. 사진은 끌어다 놓거나 붙여 넣으면 됩니다.'; pointer-events: none; }
+.ed h2, .ed h3 { font-family: var(--serif); font-weight: 600; line-height: 1.4; letter-spacing: -0.015em; }
+.ed h2 { font-size: 22px; margin: 2em 0 .6em; }
+.ed h3 { font-size: 18.5px; margin: 1.7em 0 .5em; }
+.ed p { margin: 0 0 1.2em; }
+.ed ul, .ed ol { padding-left: 1.3em; margin: 0 0 1.2em; }
+.ed li + li { margin-top: .3em; }
+.ed blockquote { margin: 1.4em 0; padding: 0 0 0 1.1em; border-left: 2px solid var(--ink); color: var(--ink-2); }
+.ed blockquote p:last-child { margin-bottom: 0; }
+.ed hr { border: 0; border-top: 1px solid var(--rule); margin: 2.4em 0; }
+.ed a { color: var(--accent); }
+.ed img { display: block; max-width: 100%; height: auto; margin: 1.6em auto 0; border-radius: 2px; cursor: pointer; }
+.ed img + em { display: block; text-align: center; font-size: 14px; color: var(--ink-3); margin: .6em 0 0; font-style: normal; }
+.ed p:has(> img) { margin-bottom: 1.8em; }
+.ed img.sel { outline: 3px solid var(--accent); outline-offset: 2px; }
+.ed img.cover-mark { box-shadow: 0 0 0 1px var(--ink-3); }
+.ed table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 0 0 1.4em; }
+.ed th, .ed td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.ed th { font-weight: 600; border-bottom-color: var(--ink-3); }
+.ed code { font-family: var(--mono); font-size: .88em; background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+.ed pre { background: var(--code-bg); padding: 14px; overflow-x: auto; font-size: 14px; border-radius: 4px; }
+.ed pre code { background: none; padding: 0; }
+.ed .embed-note { font-size: 13px; color: var(--ink-3); }
+.srcbox { width: 100%; min-height: 60vh; border: 1px solid var(--rule); border-radius: 8px; padding: 14px; background: transparent; font-family: var(--mono); font-size: 14px; line-height: 1.7; resize: vertical; }
+.count { margin-top: 30px; font-size: 13px; color: var(--ink-3); }
+
+/* 끌어다 놓기 표시 */
+.dropzone { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 82%, transparent); display: grid; place-items: center; pointer-events: none; }
+.dropzone div { border: 2px dashed var(--ink-3); border-radius: 14px; padding: 36px 48px; font-size: 18px; color: var(--ink-2); background: var(--bg); }
+
+/* 사진 도구 */
+.imgbar { position: absolute; z-index: 15; display: flex; gap: 4px; background: var(--ink); color: var(--bg); border-radius: 8px; padding: 4px; box-shadow: 0 4px 18px rgba(0,0,0,.18); }
+.imgbar button { border: 0; background: transparent; color: inherit; padding: 5px 10px; border-radius: 5px; font-size: 13.5px; white-space: nowrap; }
+.imgbar button:hover { background: rgba(255,255,255,.14); }
+
+/* 서랍(글 목록) */
+.scrim { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,.28); }
+.drawer { position: fixed; z-index: 31; top: 0; bottom: 0; left: 0; width: min(380px, 92vw); background: var(--bg); border-right: 1px solid var(--rule); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
+.drawer header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--rule); }
+.drawer h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.drawer .lst { flex: 1; overflow-y: auto; padding: 6px 0; }
+.drawer .grp { font-size: 12px; letter-spacing: .06em; color: var(--ink-3); padding: 14px 16px 4px; }
+.item { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 10px 16px; border-bottom: 1px solid var(--rule); cursor: pointer; }
+.item:hover, .item.cur { background: var(--code-bg); }
+.item .t { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .m { grid-column: 1; font-size: 12.5px; color: var(--ink-3); }
+.item .x { grid-row: 1 / span 2; grid-column: 2; align-self: center; border: 0; background: none; color: var(--ink-3); font-size: 13px; padding: 4px 6px; }
+.item .x:hover { color: var(--warn); }
+.tag { display: inline-block; font-size: 11.5px; border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; margin-right: 4px; color: var(--ink-2); }
+.tag.pub { border-color: var(--ok); color: var(--ok); }
+.drawer footer { border-top: 1px solid var(--rule); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); display: grid; gap: 8px; }
+
+/* 대화상자 */
+dialog { border: 1px solid var(--rule); border-radius: 12px; padding: 0; background: var(--bg); color: var(--ink); width: min(520px, calc(100vw - 24px)); max-height: calc(100vh - 40px); }
+dialog::backdrop { background: rgba(0,0,0,.32); }
+.dlg { padding: 22px 22px 18px; display: grid; gap: 14px; }
+.dlg h2 { margin: 0; font-size: 18px; font-family: var(--serif); }
+.dlg p { margin: 0; font-size: 14.5px; color: var(--ink-2); }
+.dlg ol { margin: 0; padding-left: 1.3em; font-size: 14px; color: var(--ink-2); display: grid; gap: 4px; }
+.dlg input[type=password], .dlg input[type=text] { width: 100%; border: 1px solid var(--rule); border-radius: 6px; padding: 8px 10px; background: transparent; }
+.dlg .row { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.dlg .sum { font-size: 14px; border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; display: grid; gap: 3px; }
+.dlg .sum b { font-weight: 600; }
+.dlg .warn { color: var(--warn); font-size: 14px; }
+.dlg .okmsg { color: var(--ok); font-size: 14px; }
+.dlg .alt { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.dlg .alt .btn { text-align: left; }
+.dlg a { color: var(--accent); }
+.dlg label.chk { display: flex; gap: 8px; align-items: center; font-size: 14.5px; }
+
+.toast { position: fixed; z-index: 60; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100vw - 32px); box-shadow: 0 4px 18px rgba(0,0,0,.2); }
+
+@media (max-width: 560px) {
+  .brand { display: none; }
+  .title { font-size: 25px; }
+  .page { padding-top: 20px; }
+  .ed { font-size: 16.5px; }
+}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-in">
+    <button class="btn ghost" id="bMenu" title="글 목록" aria-label="글 목록">☰ 글</button>
+    <span class="brand">이태호닷컴 글쓰기</span>
+    <span class="status" id="status"></span>
+    <button class="btn primary" id="bPublish">발행</button>
+  </div>
+  <div class="tools" id="tools">
+    <button data-cmd="h2" title="소제목">소제목</button>
+    <button data-cmd="h3" title="작은 제목">작은제목</button>
+    <span class="sep"></span>
+    <button data-cmd="bold" title="굵게 (Ctrl+B)"><b>굵게</b></button>
+    <button data-cmd="italic" title="기울임 (Ctrl+I)"><i>기울임</i></button>
+    <button data-cmd="link" title="링크 (Ctrl+K)">링크</button>
+    <button data-cmd="image" title="사진 넣기">사진</button>
+    <span class="sep"></span>
+    <button data-cmd="quote" title="인용">인용</button>
+    <button data-cmd="ul" title="글머리 목록">• 목록</button>
+    <button data-cmd="ol" title="번호 목록">1. 목록</button>
+    <button data-cmd="hr" title="구분선">구분선</button>
+    <button data-cmd="clear" title="서식 지우기">서식 지우기</button>
+    <button data-cmd="source" class="src" title="마크다운 원문으로 보기">원문</button>
+  </div>
+</div>
+
+<main class="page">
+  <textarea class="title" id="title" rows="1" placeholder="제목" spellcheck="false"></textarea>
+  <div class="metarow">
+    <select id="category" aria-label="카테고리">
+      <option value="">카테고리 선택</option>
+      <option>실무노트</option><option>AI</option><option>에세이</option>
+    </select>
+    <input type="date" id="date" aria-label="발행일">
+    <button class="linkish" id="bMore">글 정보 (주소·요약·대표 사진) ▾</button>
+  </div>
+  <div class="more" id="more" hidden>
+    <label>주소 (영문 소문자·숫자·하이픈)
+      <input type="text" id="slug" placeholder="예: pf-loan-structure" autocomplete="off" spellcheck="false">
+      <span class="hint" id="slugHint">비워 두면 발행일과 시각으로 자동으로 정합니다.</span>
+    </label>
+    <label>요약 (글 목록·검색 결과·카카오톡 미리보기에 쓰임)
+      <textarea id="desc" rows="2"></textarea>
+    </label>
+    <div>
+      <div style="color:var(--ink-2)">대표 사진</div>
+      <div class="cover-pick" id="coverPick"></div>
+      <div class="hint">본문 사진을 누른 뒤 "대표 사진"을 고르면 지정됩니다.</div>
+    </div>
+  </div>
+  <hr class="div">
+  <div class="ed" id="ed" contenteditable="true" spellcheck="false"></div>
+  <textarea class="srcbox" id="src" hidden spellcheck="false"></textarea>
+  <div class="count" id="count"></div>
+</main>
+
+<input type="file" id="filePick" accept="image/*" multiple hidden>
+<div class="dropzone" id="dropzone" hidden><div>사진을 여기에 놓으십시오</div></div>
+<div class="imgbar" id="imgbar" hidden>
+  <button data-a="cap">설명 달기</button>
+  <button data-a="cover">대표 사진</button>
+  <button data-a="del">삭제</button>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden>
+  <header><h2>글 목록</h2><button class="btn" id="bNew">+ 새 글</button></header>
+  <div class="lst" id="list"></div>
+  <footer>
+    <button class="btn" id="bRemote">사이트에 있는 글 불러오기</button>
+    <button class="btn" id="bSettings">GitHub 연결 설정</button>
+  </footer>
+</aside>
+
+<dialog id="dlgPublish"><form method="dialog" class="dlg" id="pubBody"></form></dialog>
+<dialog id="dlgSettings"><form method="dialog" class="dlg">
+  <h2>GitHub 연결</h2>
+  <p>발행 버튼이 글과 사진을 사이트 저장소(taeholaw/leetaeho.com)에 바로 올리려면, 처음 한 번 "접근 토큰"을 넣어야 합니다. 토큰은 이 브라우저에만 저장됩니다.</p>
+  <ol>
+    <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub 토큰 만들기 화면</a>을 엽니다.</li>
+    <li>Token name: <b>글쓰기</b> / Expiration: <b>No expiration</b> 또는 1년</li>
+    <li>Repository access: <b>Only select repositories</b> → <b>leetaeho.com</b></li>
+    <li>Permissions → Repository permissions → <b>Contents</b>를 <b>Read and write</b>로</li>
+    <li><b>Generate token</b>을 누르고 나온 값(github_pat_…)을 아래에 붙여 넣습니다.</li>
+  </ol>
+  <input type="password" id="token" placeholder="github_pat_…" autocomplete="off">
+  <div id="tokMsg"></div>
+  <div class="row">
+    <button class="btn" value="cancel">닫기</button>
+    <button class="btn" type="button" id="bTokDel">토큰 지우기</button>
+    <button class="btn primary" type="button" id="bTokSave">저장하고 확인</button>
+  </div>
+</form></dialog>
+<dialog id="dlgRemote"><form method="dialog" class="dlg">
+  <h2>사이트에 있는 글</h2>
+  <p>고칠 글을 고르면 이 도구로 불러옵니다. 수정 후 발행하면 같은 글이 고쳐집니다.</p>
+  <div id="remoteList" style="max-height:50vh;overflow:auto"></div>
+  <div class="row"><button class="btn" value="cancel">닫기</button></div>
+</form></dialog>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>/* marked (github.com/markedjs/marked) — MIT License */
+/**
+ * marked v15.0.12 - a markdown parser
+ * Copyright (c) 2011-2025, Christopher Jeffrey. (MIT Licensed)
+ * https://github.com/markedjs/marked
+ */
+
+/**
+ * DO NOT EDIT THIS FILE
+ * The code in this file is generated from files in ./src/
+ */
+(function(g,f){if(typeof exports=="object"&&typeof module<"u"){module.exports=f()}else if("function"==typeof define && define.amd){define("marked",f)}else {g["marked"]=f()}}(typeof globalThis < "u" ? globalThis : typeof self < "u" ? self : this,function(){var exports={};var __exports=exports;var module={exports};
+"use strict";
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// src/marked.ts
+var marked_exports = {};
+__export(marked_exports, {
+  Hooks: () => _Hooks,
+  Lexer: () => _Lexer,
+  Marked: () => Marked,
+  Parser: () => _Parser,
+  Renderer: () => _Renderer,
+  TextRenderer: () => _TextRenderer,
+  Tokenizer: () => _Tokenizer,
+  defaults: () => _defaults,
+  getDefaults: () => _getDefaults,
+  lexer: () => lexer,
+  marked: () => marked,
+  options: () => options,
+  parse: () => parse,
+  parseInline: () => parseInline,
+  parser: () => parser,
+  setOptions: () => setOptions,
+  use: () => use,
+  walkTokens: () => walkTokens
+});
+module.exports = __toCommonJS(marked_exports);
+
+// src/defaults.ts
+function _getDefaults() {
+  return {
+    async: false,
+    breaks: false,
+    extensions: null,
+    gfm: true,
+    hooks: null,
+    pedantic: false,
+    renderer: null,
+    silent: false,
+    tokenizer: null,
+    walkTokens: null
+  };
+}
+var _defaults = _getDefaults();
+function changeDefaults(newDefaults) {
+  _defaults = newDefaults;
+}
+
+// src/rules.ts
+var noopTest = { exec: () => null };
+function edit(regex, opt = "") {
+  let source = typeof regex === "string" ? regex : regex.source;
+  const obj = {
+    replace: (name, val) => {
+      let valSource = typeof val === "string" ? val : val.source;
+      valSource = valSource.replace(other.caret, "$1");
+      source = source.replace(name, valSource);
+      return obj;
+    },
+    getRegex: () => {
+      return new RegExp(source, opt);
+    }
+  };
+  return obj;
+}
+var other = {
+  codeRemoveIndent: /^(?: {1,4}| {0,3}\t)/gm,
+  outputLinkReplace: /\\([\[\]])/g,
+  indentCodeCompensation: /^(\s+)(?:```)/,
+  beginningSpace: /^\s+/,
+  endingHash: /#$/,
+  startingSpaceChar: /^ /,
+  endingSpaceChar: / $/,
+  nonSpaceChar: /[^ ]/,
+  newLineCharGlobal: /\n/g,
+  tabCharGlobal: /\t/g,
+  multipleSpaceGlobal: /\s+/g,
+  blankLine: /^[ \t]*$/,
+  doubleBlankLine: /\n[ \t]*\n[ \t]*$/,
+  blockquoteStart: /^ {0,3}>/,
+  blockquoteSetextReplace: /\n {0,3}((?:=+|-+) *)(?=\n|$)/g,
+  blockquoteSetextReplace2: /^ {0,3}>[ \t]?/gm,
+  listReplaceTabs: /^\t+/,
+  listReplaceNesting: /^ {1,4}(?=( {4})*[^ ])/g,
+  listIsTask: /^\[[ xX]\] /,
+  listReplaceTask: /^\[[ xX]\] +/,
+  anyLine: /\n.*\n/,
+  hrefBrackets: /^<(.*)>$/,
+  tableDelimiter: /[:|]/,
+  tableAlignChars: /^\||\| *$/g,
+  tableRowBlankLine: /\n[ \t]*$/,
+  tableAlignRight: /^ *-+: *$/,
+  tableAlignCenter: /^ *:-+: *$/,
+  tableAlignLeft: /^ *:-+ *$/,
+  startATag: /^<a /i,
+  endATag: /^<\/a>/i,
+  startPreScriptTag: /^<(pre|code|kbd|script)(\s|>)/i,
+  endPreScriptTag: /^<\/(pre|code|kbd|script)(\s|>)/i,
+  startAngleBracket: /^</,
+  endAngleBracket: />$/,
+  pedanticHrefTitle: /^([^'"]*[^\s])\s+(['"])(.*)\2/,
+  unicodeAlphaNumeric: /[\p{L}\p{N}]/u,
+  escapeTest: /[&<>"']/,
+  escapeReplace: /[&<>"']/g,
+  escapeTestNoEncode: /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/,
+  escapeReplaceNoEncode: /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/g,
+  unescapeTest: /&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig,
+  caret: /(^|[^\[])\^/g,
+  percentDecode: /%25/g,
+  findPipe: /\|/g,
+  splitPipe: / \|/,
+  slashPipe: /\\\|/g,
+  carriageReturn: /\r\n|\r/g,
+  spaceLine: /^ +$/gm,
+  notSpaceStart: /^\S*/,
+  endingNewline: /\n$/,
+  listItemRegex: (bull) => new RegExp(`^( {0,3}${bull})((?:[	 ][^\\n]*)?(?:\\n|$))`),
+  nextBulletRegex: (indent) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:[*+-]|\\d{1,9}[.)])((?:[ 	][^\\n]*)?(?:\\n|$))`),
+  hrRegex: (indent) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}((?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$)`),
+  fencesBeginRegex: (indent) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:\`\`\`|~~~)`),
+  headingBeginRegex: (indent) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}#`),
+  htmlBeginRegex: (indent) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}<(?:[a-z].*>|!--)`, "i")
+};
+var newline = /^(?:[ \t]*(?:\n|$))+/;
+var blockCode = /^((?: {4}| {0,3}\t)[^\n]+(?:\n(?:[ \t]*(?:\n|$))*)?)+/;
+var fences = /^ {0,3}(`{3,}(?=[^`\n]*(?:\n|$))|~{3,})([^\n]*)(?:\n|$)(?:|([\s\S]*?)(?:\n|$))(?: {0,3}\1[~`]* *(?=\n|$)|$)/;
+var hr = /^ {0,3}((?:-[\t ]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})(?:\n+|$)/;
+var heading = /^ {0,3}(#{1,6})(?=\s|$)(.*)(?:\n+|$)/;
+var bullet = /(?:[*+-]|\d{1,9}[.)])/;
+var lheadingCore = /^(?!bull |blockCode|fences|blockquote|heading|html|table)((?:.|\n(?!\s*?\n|bull |blockCode|fences|blockquote|heading|html|table))+?)\n {0,3}(=+|-+) *(?:\n+|$)/;
+var lheading = edit(lheadingCore).replace(/bull/g, bullet).replace(/blockCode/g, /(?: {4}| {0,3}\t)/).replace(/fences/g, / {0,3}(?:`{3,}|~{3,})/).replace(/blockquote/g, / {0,3}>/).replace(/heading/g, / {0,3}#{1,6}/).replace(/html/g, / {0,3}<[^\n>]+>\n/).replace(/\|table/g, "").getRegex();
+var lheadingGfm = edit(lheadingCore).replace(/bull/g, bullet).replace(/blockCode/g, /(?: {4}| {0,3}\t)/).replace(/fences/g, / {0,3}(?:`{3,}|~{3,})/).replace(/blockquote/g, / {0,3}>/).replace(/heading/g, / {0,3}#{1,6}/).replace(/html/g, / {0,3}<[^\n>]+>\n/).replace(/table/g, / {0,3}\|?(?:[:\- ]*\|)+[\:\- ]*\n/).getRegex();
+var _paragraph = /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\n)[^\n]+)*)/;
+var blockText = /^[^\n]+/;
+var _blockLabel = /(?!\s*\])(?:\\.|[^\[\]\\])+/;
+var def = edit(/^ {0,3}\[(label)\]: *(?:\n[ \t]*)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n[ \t]*)?| *\n[ \t]*)(title))? *(?:\n+|$)/).replace("label", _blockLabel).replace("title", /(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/).getRegex();
+var list = edit(/^( {0,3}bull)([ \t][^\n]+?)?(?:\n|$)/).replace(/bull/g, bullet).getRegex();
+var _tag = "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul";
+var _comment = /<!--(?:-?>|[\s\S]*?(?:-->|$))/;
+var html = edit(
+  "^ {0,3}(?:<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)|comment[^\\n]*(\\n+|$)|<\\?[\\s\\S]*?(?:\\?>\\n*|$)|<![A-Z][\\s\\S]*?(?:>\\n*|$)|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n[ 	]*)+\\n|$)|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ 	]*)+\\n|$)|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ 	]*)+\\n|$))",
+  "i"
+).replace("comment", _comment).replace("tag", _tag).replace("attribute", / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/).getRegex();
+var paragraph = edit(_paragraph).replace("hr", hr).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("|lheading", "").replace("|table", "").replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", _tag).getRegex();
+var blockquote = edit(/^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/).replace("paragraph", paragraph).getRegex();
+var blockNormal = {
+  blockquote,
+  code: blockCode,
+  def,
+  fences,
+  heading,
+  hr,
+  html,
+  lheading,
+  list,
+  newline,
+  paragraph,
+  table: noopTest,
+  text: blockText
+};
+var gfmTable = edit(
+  "^ *([^\\n ].*)\\n {0,3}((?:\\| *)?:?-+:? *(?:\\| *:?-+:? *)*(?:\\| *)?)(?:\\n((?:(?! *\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)"
+).replace("hr", hr).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("blockquote", " {0,3}>").replace("code", "(?: {4}| {0,3}	)[^\\n]").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", _tag).getRegex();
+var blockGfm = {
+  ...blockNormal,
+  lheading: lheadingGfm,
+  table: gfmTable,
+  paragraph: edit(_paragraph).replace("hr", hr).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("|lheading", "").replace("table", gfmTable).replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", _tag).getRegex()
+};
+var blockPedantic = {
+  ...blockNormal,
+  html: edit(
+    `^ *(?:comment *(?:\\n|\\s*$)|<(tag)[\\s\\S]+?</\\1> *(?:\\n{2,}|\\s*$)|<tag(?:"[^"]*"|'[^']*'|\\s[^'"/>\\s]*)*?/?> *(?:\\n{2,}|\\s*$))`
+  ).replace("comment", _comment).replace(/tag/g, "(?!(?:a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)\\b)\\w+(?!:|[^\\w\\s@]*@)\\b").getRegex(),
+  def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/,
+  heading: /^(#{1,6})(.*)(?:\n+|$)/,
+  fences: noopTest,
+  // fences not supported
+  lheading: /^(.+?)\n {0,3}(=+|-+) *(?:\n+|$)/,
+  paragraph: edit(_paragraph).replace("hr", hr).replace("heading", " *#{1,6} *[^\n]").replace("lheading", lheading).replace("|table", "").replace("blockquote", " {0,3}>").replace("|fences", "").replace("|list", "").replace("|html", "").replace("|tag", "").getRegex()
+};
+var escape = /^\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/;
+var inlineCode = /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/;
+var br = /^( {2,}|\\)\n(?!\s*$)/;
+var inlineText = /^(`+|[^`])(?:(?= {2,}\n)|[\s\S]*?(?:(?=[\\<!\[`*_]|\b_|$)|[^ ](?= {2,}\n)))/;
+var _punctuation = /[\p{P}\p{S}]/u;
+var _punctuationOrSpace = /[\s\p{P}\p{S}]/u;
+var _notPunctuationOrSpace = /[^\s\p{P}\p{S}]/u;
+var punctuation = edit(/^((?![*_])punctSpace)/, "u").replace(/punctSpace/g, _punctuationOrSpace).getRegex();
+var _punctuationGfmStrongEm = /(?!~)[\p{P}\p{S}]/u;
+var _punctuationOrSpaceGfmStrongEm = /(?!~)[\s\p{P}\p{S}]/u;
+var _notPunctuationOrSpaceGfmStrongEm = /(?:[^\s\p{P}\p{S}]|~)/u;
+var blockSkip = /\[[^[\]]*?\]\((?:\\.|[^\\\(\)]|\((?:\\.|[^\\\(\)])*\))*\)|`[^`]*?`|<[^<>]*?>/g;
+var emStrongLDelimCore = /^(?:\*+(?:((?!\*)punct)|[^\s*]))|^_+(?:((?!_)punct)|([^\s_]))/;
+var emStrongLDelim = edit(emStrongLDelimCore, "u").replace(/punct/g, _punctuation).getRegex();
+var emStrongLDelimGfm = edit(emStrongLDelimCore, "u").replace(/punct/g, _punctuationGfmStrongEm).getRegex();
+var emStrongRDelimAstCore = "^[^_*]*?__[^_*]*?\\*[^_*]*?(?=__)|[^*]+(?=[^*])|(?!\\*)punct(\\*+)(?=[\\s]|$)|notPunctSpace(\\*+)(?!\\*)(?=punctSpace|$)|(?!\\*)punctSpace(\\*+)(?=notPunctSpace)|[\\s](\\*+)(?!\\*)(?=punct)|(?!\\*)punct(\\*+)(?!\\*)(?=punct)|notPunctSpace(\\*+)(?=notPunctSpace)";
+var emStrongRDelimAst = edit(emStrongRDelimAstCore, "gu").replace(/notPunctSpace/g, _notPunctuationOrSpace).replace(/punctSpace/g, _punctuationOrSpace).replace(/punct/g, _punctuation).getRegex();
+var emStrongRDelimAstGfm = edit(emStrongRDelimAstCore, "gu").replace(/notPunctSpace/g, _notPunctuationOrSpaceGfmStrongEm).replace(/punctSpace/g, _punctuationOrSpaceGfmStrongEm).replace(/punct/g, _punctuationGfmStrongEm).getRegex();
+var emStrongRDelimUnd = edit(
+  "^[^_*]*?\\*\\*[^_*]*?_[^_*]*?(?=\\*\\*)|[^_]+(?=[^_])|(?!_)punct(_+)(?=[\\s]|$)|notPunctSpace(_+)(?!_)(?=punctSpace|$)|(?!_)punctSpace(_+)(?=notPunctSpace)|[\\s](_+)(?!_)(?=punct)|(?!_)punct(_+)(?!_)(?=punct)",
+  "gu"
+).replace(/notPunctSpace/g, _notPunctuationOrSpace).replace(/punctSpace/g, _punctuationOrSpace).replace(/punct/g, _punctuation).getRegex();
+var anyPunctuation = edit(/\\(punct)/, "gu").replace(/punct/g, _punctuation).getRegex();
+var autolink = edit(/^<(scheme:[^\s\x00-\x1f<>]*|email)>/).replace("scheme", /[a-zA-Z][a-zA-Z0-9+.-]{1,31}/).replace("email", /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/).getRegex();
+var _inlineComment = edit(_comment).replace("(?:-->|$)", "-->").getRegex();
+var tag = edit(
+  "^comment|^</[a-zA-Z][\\w:-]*\\s*>|^<[a-zA-Z][\\w-]*(?:attribute)*?\\s*/?>|^<\\?[\\s\\S]*?\\?>|^<![a-zA-Z]+\\s[\\s\\S]*?>|^<!\\[CDATA\\[[\\s\\S]*?\\]\\]>"
+).replace("comment", _inlineComment).replace("attribute", /\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/).getRegex();
+var _inlineLabel = /(?:\[(?:\\.|[^\[\]\\])*\]|\\.|`[^`]*`|[^\[\]\\`])*?/;
+var link = edit(/^!?\[(label)\]\(\s*(href)(?:(?:[ \t]*(?:\n[ \t]*)?)(title))?\s*\)/).replace("label", _inlineLabel).replace("href", /<(?:\\.|[^\n<>\\])+>|[^ \t\n\x00-\x1f]*/).replace("title", /"(?:\\"?|[^"\\])*"|'(?:\\'?|[^'\\])*'|\((?:\\\)?|[^)\\])*\)/).getRegex();
+var reflink = edit(/^!?\[(label)\]\[(ref)\]/).replace("label", _inlineLabel).replace("ref", _blockLabel).getRegex();
+var nolink = edit(/^!?\[(ref)\](?:\[\])?/).replace("ref", _blockLabel).getRegex();
+var reflinkSearch = edit("reflink|nolink(?!\\()", "g").replace("reflink", reflink).replace("nolink", nolink).getRegex();
+var inlineNormal = {
+  _backpedal: noopTest,
+  // only used for GFM url
+  anyPunctuation,
+  autolink,
+  blockSkip,
+  br,
+  code: inlineCode,
+  del: noopTest,
+  emStrongLDelim,
+  emStrongRDelimAst,
+  emStrongRDelimUnd,
+  escape,
+  link,
+  nolink,
+  punctuation,
+  reflink,
+  reflinkSearch,
+  tag,
+  text: inlineText,
+  url: noopTest
+};
+var inlinePedantic = {
+  ...inlineNormal,
+  link: edit(/^!?\[(label)\]\((.*?)\)/).replace("label", _inlineLabel).getRegex(),
+  reflink: edit(/^!?\[(label)\]\s*\[([^\]]*)\]/).replace("label", _inlineLabel).getRegex()
+};
+var inlineGfm = {
+  ...inlineNormal,
+  emStrongRDelimAst: emStrongRDelimAstGfm,
+  emStrongLDelim: emStrongLDelimGfm,
+  url: edit(/^((?:ftp|https?):\/\/|www\.)(?:[a-zA-Z0-9\-]+\.?)+[^\s<]*|^email/, "i").replace("email", /[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/).getRegex(),
+  _backpedal: /(?:[^?!.,:;*_'"~()&]+|\([^)]*\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_'"~)]+(?!$))+/,
+  del: /^(~~?)(?=[^\s~])((?:\\.|[^\\])*?(?:\\.|[^\s~\\]))\1(?=[^~]|$)/,
+  text: /^([`~]+|[^`~])(?:(?= {2,}\n)|(?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)|[\s\S]*?(?:(?=[\\<!\[`*~_]|\b_|https?:\/\/|ftp:\/\/|www\.|$)|[^ ](?= {2,}\n)|[^a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-](?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)))/
+};
+var inlineBreaks = {
+  ...inlineGfm,
+  br: edit(br).replace("{2,}", "*").getRegex(),
+  text: edit(inlineGfm.text).replace("\\b_", "\\b_| {2,}\\n").replace(/\{2,\}/g, "*").getRegex()
+};
+var block = {
+  normal: blockNormal,
+  gfm: blockGfm,
+  pedantic: blockPedantic
+};
+var inline = {
+  normal: inlineNormal,
+  gfm: inlineGfm,
+  breaks: inlineBreaks,
+  pedantic: inlinePedantic
+};
+
+// src/helpers.ts
+var escapeReplacements = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;"
+};
+var getEscapeReplacement = (ch) => escapeReplacements[ch];
+function escape2(html2, encode) {
+  if (encode) {
+    if (other.escapeTest.test(html2)) {
+      return html2.replace(other.escapeReplace, getEscapeReplacement);
+    }
+  } else {
+    if (other.escapeTestNoEncode.test(html2)) {
+      return html2.replace(other.escapeReplaceNoEncode, getEscapeReplacement);
+    }
+  }
+  return html2;
+}
+function cleanUrl(href) {
+  try {
+    href = encodeURI(href).replace(other.percentDecode, "%");
+  } catch {
+    return null;
+  }
+  return href;
+}
+function splitCells(tableRow, count) {
+  const row = tableRow.replace(other.findPipe, (match, offset, str) => {
+    let escaped = false;
+    let curr = offset;
+    while (--curr >= 0 && str[curr] === "\\") escaped = !escaped;
+    if (escaped) {
+      return "|";
+    } else {
+      return " |";
+    }
+  }), cells = row.split(other.splitPipe);
+  let i = 0;
+  if (!cells[0].trim()) {
+    cells.shift();
+  }
+  if (cells.length > 0 && !cells.at(-1)?.trim()) {
+    cells.pop();
+  }
+  if (count) {
+    if (cells.length > count) {
+      cells.splice(count);
+    } else {
+      while (cells.length < count) cells.push("");
+    }
+  }
+  for (; i < cells.length; i++) {
+    cells[i] = cells[i].trim().replace(other.slashPipe, "|");
+  }
+  return cells;
+}
+function rtrim(str, c, invert) {
+  const l = str.length;
+  if (l === 0) {
+    return "";
+  }
+  let suffLen = 0;
+  while (suffLen < l) {
+    const currChar = str.charAt(l - suffLen - 1);
+    if (currChar === c && !invert) {
+      suffLen++;
+    } else if (currChar !== c && invert) {
+      suffLen++;
+    } else {
+      break;
+    }
+  }
+  return str.slice(0, l - suffLen);
+}
+function findClosingBracket(str, b) {
+  if (str.indexOf(b[1]) === -1) {
+    return -1;
+  }
+  let level = 0;
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === "\\") {
+      i++;
+    } else if (str[i] === b[0]) {
+      level++;
+    } else if (str[i] === b[1]) {
+      level--;
+      if (level < 0) {
+        return i;
+      }
+    }
+  }
+  if (level > 0) {
+    return -2;
+  }
+  return -1;
+}
+
+// src/Tokenizer.ts
+function outputLink(cap, link2, raw, lexer2, rules) {
+  const href = link2.href;
+  const title = link2.title || null;
+  const text = cap[1].replace(rules.other.outputLinkReplace, "$1");
+  lexer2.state.inLink = true;
+  const token = {
+    type: cap[0].charAt(0) === "!" ? "image" : "link",
+    raw,
+    href,
+    title,
+    text,
+    tokens: lexer2.inlineTokens(text)
+  };
+  lexer2.state.inLink = false;
+  return token;
+}
+function indentCodeCompensation(raw, text, rules) {
+  const matchIndentToCode = raw.match(rules.other.indentCodeCompensation);
+  if (matchIndentToCode === null) {
+    return text;
+  }
+  const indentToCode = matchIndentToCode[1];
+  return text.split("\n").map((node) => {
+    const matchIndentInNode = node.match(rules.other.beginningSpace);
+    if (matchIndentInNode === null) {
+      return node;
+    }
+    const [indentInNode] = matchIndentInNode;
+    if (indentInNode.length >= indentToCode.length) {
+      return node.slice(indentToCode.length);
+    }
+    return node;
+  }).join("\n");
+}
+var _Tokenizer = class {
+  options;
+  rules;
+  // set by the lexer
+  lexer;
+  // set by the lexer
+  constructor(options2) {
+    this.options = options2 || _defaults;
+  }
+  space(src) {
+    const cap = this.rules.block.newline.exec(src);
+    if (cap && cap[0].length > 0) {
+      return {
+        type: "space",
+        raw: cap[0]
+      };
+    }
+  }
+  code(src) {
+    const cap = this.rules.block.code.exec(src);
+    if (cap) {
+      const text = cap[0].replace(this.rules.other.codeRemoveIndent, "");
+      return {
+        type: "code",
+        raw: cap[0],
+        codeBlockStyle: "indented",
+        text: !this.options.pedantic ? rtrim(text, "\n") : text
+      };
+    }
+  }
+  fences(src) {
+    const cap = this.rules.block.fences.exec(src);
+    if (cap) {
+      const raw = cap[0];
+      const text = indentCodeCompensation(raw, cap[3] || "", this.rules);
+      return {
+        type: "code",
+        raw,
+        lang: cap[2] ? cap[2].trim().replace(this.rules.inline.anyPunctuation, "$1") : cap[2],
+        text
+      };
+    }
+  }
+  heading(src) {
+    const cap = this.rules.block.heading.exec(src);
+    if (cap) {
+      let text = cap[2].trim();
+      if (this.rules.other.endingHash.test(text)) {
+        const trimmed = rtrim(text, "#");
+        if (this.options.pedantic) {
+          text = trimmed.trim();
+        } else if (!trimmed || this.rules.other.endingSpaceChar.test(trimmed)) {
+          text = trimmed.trim();
+        }
+      }
+      return {
+        type: "heading",
+        raw: cap[0],
+        depth: cap[1].length,
+        text,
+        tokens: this.lexer.inline(text)
+      };
+    }
+  }
+  hr(src) {
+    const cap = this.rules.block.hr.exec(src);
+    if (cap) {
+      return {
+        type: "hr",
+        raw: rtrim(cap[0], "\n")
+      };
+    }
+  }
+  blockquote(src) {
+    const cap = this.rules.block.blockquote.exec(src);
+    if (cap) {
+      let lines = rtrim(cap[0], "\n").split("\n");
+      let raw = "";
+      let text = "";
+      const tokens = [];
+      while (lines.length > 0) {
+        let inBlockquote = false;
+        const currentLines = [];
+        let i;
+        for (i = 0; i < lines.length; i++) {
+          if (this.rules.other.blockquoteStart.test(lines[i])) {
+            currentLines.push(lines[i]);
+            inBlockquote = true;
+          } else if (!inBlockquote) {
+            currentLines.push(lines[i]);
+          } else {
+            break;
+          }
+        }
+        lines = lines.slice(i);
+        const currentRaw = currentLines.join("\n");
+        const currentText = currentRaw.replace(this.rules.other.blockquoteSetextReplace, "\n    $1").replace(this.rules.other.blockquoteSetextReplace2, "");
+        raw = raw ? `${raw}
+${currentRaw}` : currentRaw;
+        text = text ? `${text}
+${currentText}` : currentText;
+        const top = this.lexer.state.top;
+        this.lexer.state.top = true;
+        this.lexer.blockTokens(currentText, tokens, true);
+        this.lexer.state.top = top;
+        if (lines.length === 0) {
+          break;
+        }
+        const lastToken = tokens.at(-1);
+        if (lastToken?.type === "code") {
+          break;
+        } else if (lastToken?.type === "blockquote") {
+          const oldToken = lastToken;
+          const newText = oldToken.raw + "\n" + lines.join("\n");
+          const newToken = this.blockquote(newText);
+          tokens[tokens.length - 1] = newToken;
+          raw = raw.substring(0, raw.length - oldToken.raw.length) + newToken.raw;
+          text = text.substring(0, text.length - oldToken.text.length) + newToken.text;
+          break;
+        } else if (lastToken?.type === "list") {
+          const oldToken = lastToken;
+          const newText = oldToken.raw + "\n" + lines.join("\n");
+          const newToken = this.list(newText);
+          tokens[tokens.length - 1] = newToken;
+          raw = raw.substring(0, raw.length - lastToken.raw.length) + newToken.raw;
+          text = text.substring(0, text.length - oldToken.raw.length) + newToken.raw;
+          lines = newText.substring(tokens.at(-1).raw.length).split("\n");
+          continue;
+        }
+      }
+      return {
+        type: "blockquote",
+        raw,
+        tokens,
+        text
+      };
+    }
+  }
+  list(src) {
+    let cap = this.rules.block.list.exec(src);
+    if (cap) {
+      let bull = cap[1].trim();
+      const isordered = bull.length > 1;
+      const list2 = {
+        type: "list",
+        raw: "",
+        ordered: isordered,
+        start: isordered ? +bull.slice(0, -1) : "",
+        loose: false,
+        items: []
+      };
+      bull = isordered ? `\\d{1,9}\\${bull.slice(-1)}` : `\\${bull}`;
+      if (this.options.pedantic) {
+        bull = isordered ? bull : "[*+-]";
+      }
+      const itemRegex = this.rules.other.listItemRegex(bull);
+      let endsWithBlankLine = false;
+      while (src) {
+        let endEarly = false;
+        let raw = "";
+        let itemContents = "";
+        if (!(cap = itemRegex.exec(src))) {
+          break;
+        }
+        if (this.rules.block.hr.test(src)) {
+          break;
+        }
+        raw = cap[0];
+        src = src.substring(raw.length);
+        let line = cap[2].split("\n", 1)[0].replace(this.rules.other.listReplaceTabs, (t) => " ".repeat(3 * t.length));
+        let nextLine = src.split("\n", 1)[0];
+        let blankLine = !line.trim();
+        let indent = 0;
+        if (this.options.pedantic) {
+          indent = 2;
+          itemContents = line.trimStart();
+        } else if (blankLine) {
+          indent = cap[1].length + 1;
+        } else {
+          indent = cap[2].search(this.rules.other.nonSpaceChar);
+          indent = indent > 4 ? 1 : indent;
+          itemContents = line.slice(indent);
+          indent += cap[1].length;
+        }
+        if (blankLine && this.rules.other.blankLine.test(nextLine)) {
+          raw += nextLine + "\n";
+          src = src.substring(nextLine.length + 1);
+          endEarly = true;
+        }
+        if (!endEarly) {
+          const nextBulletRegex = this.rules.other.nextBulletRegex(indent);
+          const hrRegex = this.rules.other.hrRegex(indent);
+          const fencesBeginRegex = this.rules.other.fencesBeginRegex(indent);
+          const headingBeginRegex = this.rules.other.headingBeginRegex(indent);
+          const htmlBeginRegex = this.rules.other.htmlBeginRegex(indent);
+          while (src) {
+            const rawLine = src.split("\n", 1)[0];
+            let nextLineWithoutTabs;
+            nextLine = rawLine;
+            if (this.options.pedantic) {
+              nextLine = nextLine.replace(this.rules.other.listReplaceNesting, "  ");
+              nextLineWithoutTabs = nextLine;
+            } else {
+              nextLineWithoutTabs = nextLine.replace(this.rules.other.tabCharGlobal, "    ");
+            }
+            if (fencesBeginRegex.test(nextLine)) {
+              break;
+            }
+            if (headingBeginRegex.test(nextLine)) {
+              break;
+            }
+            if (htmlBeginRegex.test(nextLine)) {
+              break;
+            }
+            if (nextBulletRegex.test(nextLine)) {
+              break;
+            }
+            if (hrRegex.test(nextLine)) {
+              break;
+            }
+            if (nextLineWithoutTabs.search(this.rules.other.nonSpaceChar) >= indent || !nextLine.trim()) {
+              itemContents += "\n" + nextLineWithoutTabs.slice(indent);
+            } else {
+              if (blankLine) {
+                break;
+              }
+              if (line.replace(this.rules.other.tabCharGlobal, "    ").search(this.rules.other.nonSpaceChar) >= 4) {
+                break;
+              }
+              if (fencesBeginRegex.test(line)) {
+                break;
+              }
+              if (headingBeginRegex.test(line)) {
+                break;
+              }
+              if (hrRegex.test(line)) {
+                break;
+              }
+              itemContents += "\n" + nextLine;
+            }
+            if (!blankLine && !nextLine.trim()) {
+              blankLine = true;
+            }
+            raw += rawLine + "\n";
+            src = src.substring(rawLine.length + 1);
+            line = nextLineWithoutTabs.slice(indent);
+          }
+        }
+        if (!list2.loose) {
+          if (endsWithBlankLine) {
+            list2.loose = true;
+          } else if (this.rules.other.doubleBlankLine.test(raw)) {
+            endsWithBlankLine = true;
+          }
+        }
+        let istask = null;
+        let ischecked;
+        if (this.options.gfm) {
+          istask = this.rules.other.listIsTask.exec(itemContents);
+          if (istask) {
+            ischecked = istask[0] !== "[ ] ";
+            itemContents = itemContents.replace(this.rules.other.listReplaceTask, "");
+          }
+        }
+        list2.items.push({
+          type: "list_item",
+          raw,
+          task: !!istask,
+          checked: ischecked,
+          loose: false,
+          text: itemContents,
+          tokens: []
+        });
+        list2.raw += raw;
+      }
+      const lastItem = list2.items.at(-1);
+      if (lastItem) {
+        lastItem.raw = lastItem.raw.trimEnd();
+        lastItem.text = lastItem.text.trimEnd();
+      } else {
+        return;
+      }
+      list2.raw = list2.raw.trimEnd();
+      for (let i = 0; i < list2.items.length; i++) {
+        this.lexer.state.top = false;
+        list2.items[i].tokens = this.lexer.blockTokens(list2.items[i].text, []);
+        if (!list2.loose) {
+          const spacers = list2.items[i].tokens.filter((t) => t.type === "space");
+          const hasMultipleLineBreaks = spacers.length > 0 && spacers.some((t) => this.rules.other.anyLine.test(t.raw));
+          list2.loose = hasMultipleLineBreaks;
+        }
+      }
+      if (list2.loose) {
+        for (let i = 0; i < list2.items.length; i++) {
+          list2.items[i].loose = true;
+        }
+      }
+      return list2;
+    }
+  }
+  html(src) {
+    const cap = this.rules.block.html.exec(src);
+    if (cap) {
+      const token = {
+        type: "html",
+        block: true,
+        raw: cap[0],
+        pre: cap[1] === "pre" || cap[1] === "script" || cap[1] === "style",
+        text: cap[0]
+      };
+      return token;
+    }
+  }
+  def(src) {
+    const cap = this.rules.block.def.exec(src);
+    if (cap) {
+      const tag2 = cap[1].toLowerCase().replace(this.rules.other.multipleSpaceGlobal, " ");
+      const href = cap[2] ? cap[2].replace(this.rules.other.hrefBrackets, "$1").replace(this.rules.inline.anyPunctuation, "$1") : "";
+      const title = cap[3] ? cap[3].substring(1, cap[3].length - 1).replace(this.rules.inline.anyPunctuation, "$1") : cap[3];
+      return {
+        type: "def",
+        tag: tag2,
+        raw: cap[0],
+        href,
+        title
+      };
+    }
+  }
+  table(src) {
+    const cap = this.rules.block.table.exec(src);
+    if (!cap) {
+      return;
+    }
+    if (!this.rules.other.tableDelimiter.test(cap[2])) {
+      return;
+    }
+    const headers = splitCells(cap[1]);
+    const aligns = cap[2].replace(this.rules.other.tableAlignChars, "").split("|");
+    const rows = cap[3]?.trim() ? cap[3].replace(this.rules.other.tableRowBlankLine, "").split("\n") : [];
+    const item = {
+      type: "table",
+      raw: cap[0],
+      header: [],
+      align: [],
+      rows: []
+    };
+    if (headers.length !== aligns.length) {
+      return;
+    }
+    for (const align of aligns) {
+      if (this.rules.other.tableAlignRight.test(align)) {
+        item.align.push("right");
+      } else if (this.rules.other.tableAlignCenter.test(align)) {
+        item.align.push("center");
+      } else if (this.rules.other.tableAlignLeft.test(align)) {
+        item.align.push("left");
+      } else {
+        item.align.push(null);
+      }
+    }
+    for (let i = 0; i < headers.length; i++) {
+      item.header.push({
+        text: headers[i],
+        tokens: this.lexer.inline(headers[i]),
+        header: true,
+        align: item.align[i]
+      });
+    }
+    for (const row of rows) {
+      item.rows.push(splitCells(row, item.header.length).map((cell, i) => {
+        return {
+          text: cell,
+          tokens: this.lexer.inline(cell),
+          header: false,
+          align: item.align[i]
+        };
+      }));
+    }
+    return item;
+  }
+  lheading(src) {
+    const cap = this.rules.block.lheading.exec(src);
+    if (cap) {
+      return {
+        type: "heading",
+        raw: cap[0],
+        depth: cap[2].charAt(0) === "=" ? 1 : 2,
+        text: cap[1],
+        tokens: this.lexer.inline(cap[1])
+      };
+    }
+  }
+  paragraph(src) {
+    const cap = this.rules.block.paragraph.exec(src);
+    if (cap) {
+      const text = cap[1].charAt(cap[1].length - 1) === "\n" ? cap[1].slice(0, -1) : cap[1];
+      return {
+        type: "paragraph",
+        raw: cap[0],
+        text,
+        tokens: this.lexer.inline(text)
+      };
+    }
+  }
+  text(src) {
+    const cap = this.rules.block.text.exec(src);
+    if (cap) {
+      return {
+        type: "text",
+        raw: cap[0],
+        text: cap[0],
+        tokens: this.lexer.inline(cap[0])
+      };
+    }
+  }
+  escape(src) {
+    const cap = this.rules.inline.escape.exec(src);
+    if (cap) {
+      return {
+        type: "escape",
+        raw: cap[0],
+        text: cap[1]
+      };
+    }
+  }
+  tag(src) {
+    const cap = this.rules.inline.tag.exec(src);
+    if (cap) {
+      if (!this.lexer.state.inLink && this.rules.other.startATag.test(cap[0])) {
+        this.lexer.state.inLink = true;
+      } else if (this.lexer.state.inLink && this.rules.other.endATag.test(cap[0])) {
+        this.lexer.state.inLink = false;
+      }
+      if (!this.lexer.state.inRawBlock && this.rules.other.startPreScriptTag.test(cap[0])) {
+        this.lexer.state.inRawBlock = true;
+      } else if (this.lexer.state.inRawBlock && this.rules.other.endPreScriptTag.test(cap[0])) {
+        this.lexer.state.inRawBlock = false;
+      }
+      return {
+        type: "html",
+        raw: cap[0],
+        inLink: this.lexer.state.inLink,
+        inRawBlock: this.lexer.state.inRawBlock,
+        block: false,
+        text: cap[0]
+      };
+    }
+  }
+  link(src) {
+    const cap = this.rules.inline.link.exec(src);
+    if (cap) {
+      const trimmedUrl = cap[2].trim();
+      if (!this.options.pedantic && this.rules.other.startAngleBracket.test(trimmedUrl)) {
+        if (!this.rules.other.endAngleBracket.test(trimmedUrl)) {
+          return;
+        }
+        const rtrimSlash = rtrim(trimmedUrl.slice(0, -1), "\\");
+        if ((trimmedUrl.length - rtrimSlash.length) % 2 === 0) {
+          return;
+        }
+      } else {
+        const lastParenIndex = findClosingBracket(cap[2], "()");
+        if (lastParenIndex === -2) {
+          return;
+        }
+        if (lastParenIndex > -1) {
+          const start = cap[0].indexOf("!") === 0 ? 5 : 4;
+          const linkLen = start + cap[1].length + lastParenIndex;
+          cap[2] = cap[2].substring(0, lastParenIndex);
+          cap[0] = cap[0].substring(0, linkLen).trim();
+          cap[3] = "";
+        }
+      }
+      let href = cap[2];
+      let title = "";
+      if (this.options.pedantic) {
+        const link2 = this.rules.other.pedanticHrefTitle.exec(href);
+        if (link2) {
+          href = link2[1];
+          title = link2[3];
+        }
+      } else {
+        title = cap[3] ? cap[3].slice(1, -1) : "";
+      }
+      href = href.trim();
+      if (this.rules.other.startAngleBracket.test(href)) {
+        if (this.options.pedantic && !this.rules.other.endAngleBracket.test(trimmedUrl)) {
+          href = href.slice(1);
+        } else {
+          href = href.slice(1, -1);
+        }
+      }
+      return outputLink(cap, {
+        href: href ? href.replace(this.rules.inline.anyPunctuation, "$1") : href,
+        title: title ? title.replace(this.rules.inline.anyPunctuation, "$1") : title
+      }, cap[0], this.lexer, this.rules);
+    }
+  }
+  reflink(src, links) {
+    let cap;
+    if ((cap = this.rules.inline.reflink.exec(src)) || (cap = this.rules.inline.nolink.exec(src))) {
+      const linkString = (cap[2] || cap[1]).replace(this.rules.other.multipleSpaceGlobal, " ");
+      const link2 = links[linkString.toLowerCase()];
+      if (!link2) {
+        const text = cap[0].charAt(0);
+        return {
+          type: "text",
+          raw: text,
+          text
+        };
+      }
+      return outputLink(cap, link2, cap[0], this.lexer, this.rules);
+    }
+  }
+  emStrong(src, maskedSrc, prevChar = "") {
+    let match = this.rules.inline.emStrongLDelim.exec(src);
+    if (!match) return;
+    if (match[3] && prevChar.match(this.rules.other.unicodeAlphaNumeric)) return;
+    const nextChar = match[1] || match[2] || "";
+    if (!nextChar || !prevChar || this.rules.inline.punctuation.exec(prevChar)) {
+      const lLength = [...match[0]].length - 1;
+      let rDelim, rLength, delimTotal = lLength, midDelimTotal = 0;
+      const endReg = match[0][0] === "*" ? this.rules.inline.emStrongRDelimAst : this.rules.inline.emStrongRDelimUnd;
+      endReg.lastIndex = 0;
+      maskedSrc = maskedSrc.slice(-1 * src.length + lLength);
+      while ((match = endReg.exec(maskedSrc)) != null) {
+        rDelim = match[1] || match[2] || match[3] || match[4] || match[5] || match[6];
+        if (!rDelim) continue;
+        rLength = [...rDelim].length;
+        if (match[3] || match[4]) {
+          delimTotal += rLength;
+          continue;
+        } else if (match[5] || match[6]) {
+          if (lLength % 3 && !((lLength + rLength) % 3)) {
+            midDelimTotal += rLength;
+            continue;
+          }
+        }
+        delimTotal -= rLength;
+        if (delimTotal > 0) continue;
+        rLength = Math.min(rLength, rLength + delimTotal + midDelimTotal);
+        const lastCharLength = [...match[0]][0].length;
+        const raw = src.slice(0, lLength + match.index + lastCharLength + rLength);
+        if (Math.min(lLength, rLength) % 2) {
+          const text2 = raw.slice(1, -1);
+          return {
+            type: "em",
+            raw,
+            text: text2,
+            tokens: this.lexer.inlineTokens(text2)
+          };
+        }
+        const text = raw.slice(2, -2);
+        return {
+          type: "strong",
+          raw,
+          text,
+          tokens: this.lexer.inlineTokens(text)
+        };
+      }
+    }
+  }
+  codespan(src) {
+    const cap = this.rules.inline.code.exec(src);
+    if (cap) {
+      let text = cap[2].replace(this.rules.other.newLineCharGlobal, " ");
+      const hasNonSpaceChars = this.rules.other.nonSpaceChar.test(text);
+      const hasSpaceCharsOnBothEnds = this.rules.other.startingSpaceChar.test(text) && this.rules.other.endingSpaceChar.test(text);
+      if (hasNonSpaceChars && hasSpaceCharsOnBothEnds) {
+        text = text.substring(1, text.length - 1);
+      }
+      return {
+        type: "codespan",
+        raw: cap[0],
+        text
+      };
+    }
+  }
+  br(src) {
+    const cap = this.rules.inline.br.exec(src);
+    if (cap) {
+      return {
+        type: "br",
+        raw: cap[0]
+      };
+    }
+  }
+  del(src) {
+    const cap = this.rules.inline.del.exec(src);
+    if (cap) {
+      return {
+        type: "del",
+        raw: cap[0],
+        text: cap[2],
+        tokens: this.lexer.inlineTokens(cap[2])
+      };
+    }
+  }
+  autolink(src) {
+    const cap = this.rules.inline.autolink.exec(src);
+    if (cap) {
+      let text, href;
+      if (cap[2] === "@") {
+        text = cap[1];
+        href = "mailto:" + text;
+      } else {
+        text = cap[1];
+        href = text;
+      }
+      return {
+        type: "link",
+        raw: cap[0],
+        text,
+        href,
+        tokens: [
+          {
+            type: "text",
+            raw: text,
+            text
+          }
+        ]
+      };
+    }
+  }
+  url(src) {
+    let cap;
+    if (cap = this.rules.inline.url.exec(src)) {
+      let text, href;
+      if (cap[2] === "@") {
+        text = cap[0];
+        href = "mailto:" + text;
+      } else {
+        let prevCapZero;
+        do {
+          prevCapZero = cap[0];
+          cap[0] = this.rules.inline._backpedal.exec(cap[0])?.[0] ?? "";
+        } while (prevCapZero !== cap[0]);
+        text = cap[0];
+        if (cap[1] === "www.") {
+          href = "http://" + cap[0];
+        } else {
+          href = cap[0];
+        }
+      }
+      return {
+        type: "link",
+        raw: cap[0],
+        text,
+        href,
+        tokens: [
+          {
+            type: "text",
+            raw: text,
+            text
+          }
+        ]
+      };
+    }
+  }
+  inlineText(src) {
+    const cap = this.rules.inline.text.exec(src);
+    if (cap) {
+      const escaped = this.lexer.state.inRawBlock;
+      return {
+        type: "text",
+        raw: cap[0],
+        text: cap[0],
+        escaped
+      };
+    }
+  }
+};
+
+// src/Lexer.ts
+var _Lexer = class __Lexer {
+  tokens;
+  options;
+  state;
+  tokenizer;
+  inlineQueue;
+  constructor(options2) {
+    this.tokens = [];
+    this.tokens.links = /* @__PURE__ */ Object.create(null);
+    this.options = options2 || _defaults;
+    this.options.tokenizer = this.options.tokenizer || new _Tokenizer();
+    this.tokenizer = this.options.tokenizer;
+    this.tokenizer.options = this.options;
+    this.tokenizer.lexer = this;
+    this.inlineQueue = [];
+    this.state = {
+      inLink: false,
+      inRawBlock: false,
+      top: true
+    };
+    const rules = {
+      other,
+      block: block.normal,
+      inline: inline.normal
+    };
+    if (this.options.pedantic) {
+      rules.block = block.pedantic;
+      rules.inline = inline.pedantic;
+    } else if (this.options.gfm) {
+      rules.block = block.gfm;
+      if (this.options.breaks) {
+        rules.inline = inline.breaks;
+      } else {
+        rules.inline = inline.gfm;
+      }
+    }
+    this.tokenizer.rules = rules;
+  }
+  /**
+   * Expose Rules
+   */
+  static get rules() {
+    return {
+      block,
+      inline
+    };
+  }
+  /**
+   * Static Lex Method
+   */
+  static lex(src, options2) {
+    const lexer2 = new __Lexer(options2);
+    return lexer2.lex(src);
+  }
+  /**
+   * Static Lex Inline Method
+   */
+  static lexInline(src, options2) {
+    const lexer2 = new __Lexer(options2);
+    return lexer2.inlineTokens(src);
+  }
+  /**
+   * Preprocessing
+   */
+  lex(src) {
+    src = src.replace(other.carriageReturn, "\n");
+    this.blockTokens(src, this.tokens);
+    for (let i = 0; i < this.inlineQueue.length; i++) {
+      const next = this.inlineQueue[i];
+      this.inlineTokens(next.src, next.tokens);
+    }
+    this.inlineQueue = [];
+    return this.tokens;
+  }
+  blockTokens(src, tokens = [], lastParagraphClipped = false) {
+    if (this.options.pedantic) {
+      src = src.replace(other.tabCharGlobal, "    ").replace(other.spaceLine, "");
+    }
+    while (src) {
+      let token;
+      if (this.options.extensions?.block?.some((extTokenizer) => {
+        if (token = extTokenizer.call({ lexer: this }, src, tokens)) {
+          src = src.substring(token.raw.length);
+          tokens.push(token);
+          return true;
+        }
+        return false;
+      })) {
+        continue;
+      }
+      if (token = this.tokenizer.space(src)) {
+        src = src.substring(token.raw.length);
+        const lastToken = tokens.at(-1);
+        if (token.raw.length === 1 && lastToken !== void 0) {
+          lastToken.raw += "\n";
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (token = this.tokenizer.code(src)) {
+        src = src.substring(token.raw.length);
+        const lastToken = tokens.at(-1);
+        if (lastToken?.type === "paragraph" || lastToken?.type === "text") {
+          lastToken.raw += "\n" + token.raw;
+          lastToken.text += "\n" + token.text;
+          this.inlineQueue.at(-1).src = lastToken.text;
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (token = this.tokenizer.fences(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.heading(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.hr(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.blockquote(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.list(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.html(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.def(src)) {
+        src = src.substring(token.raw.length);
+        const lastToken = tokens.at(-1);
+        if (lastToken?.type === "paragraph" || lastToken?.type === "text") {
+          lastToken.raw += "\n" + token.raw;
+          lastToken.text += "\n" + token.raw;
+          this.inlineQueue.at(-1).src = lastToken.text;
+        } else if (!this.tokens.links[token.tag]) {
+          this.tokens.links[token.tag] = {
+            href: token.href,
+            title: token.title
+          };
+        }
+        continue;
+      }
+      if (token = this.tokenizer.table(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.lheading(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      let cutSrc = src;
+      if (this.options.extensions?.startBlock) {
+        let startIndex = Infinity;
+        const tempSrc = src.slice(1);
+        let tempStart;
+        this.options.extensions.startBlock.forEach((getStartIndex) => {
+          tempStart = getStartIndex.call({ lexer: this }, tempSrc);
+          if (typeof tempStart === "number" && tempStart >= 0) {
+            startIndex = Math.min(startIndex, tempStart);
+          }
+        });
+        if (startIndex < Infinity && startIndex >= 0) {
+          cutSrc = src.substring(0, startIndex + 1);
+        }
+      }
+      if (this.state.top && (token = this.tokenizer.paragraph(cutSrc))) {
+        const lastToken = tokens.at(-1);
+        if (lastParagraphClipped && lastToken?.type === "paragraph") {
+          lastToken.raw += "\n" + token.raw;
+          lastToken.text += "\n" + token.text;
+          this.inlineQueue.pop();
+          this.inlineQueue.at(-1).src = lastToken.text;
+        } else {
+          tokens.push(token);
+        }
+        lastParagraphClipped = cutSrc.length !== src.length;
+        src = src.substring(token.raw.length);
+        continue;
+      }
+      if (token = this.tokenizer.text(src)) {
+        src = src.substring(token.raw.length);
+        const lastToken = tokens.at(-1);
+        if (lastToken?.type === "text") {
+          lastToken.raw += "\n" + token.raw;
+          lastToken.text += "\n" + token.text;
+          this.inlineQueue.pop();
+          this.inlineQueue.at(-1).src = lastToken.text;
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (src) {
+        const errMsg = "Infinite loop on byte: " + src.charCodeAt(0);
+        if (this.options.silent) {
+          console.error(errMsg);
+          break;
+        } else {
+          throw new Error(errMsg);
+        }
+      }
+    }
+    this.state.top = true;
+    return tokens;
+  }
+  inline(src, tokens = []) {
+    this.inlineQueue.push({ src, tokens });
+    return tokens;
+  }
+  /**
+   * Lexing/Compiling
+   */
+  inlineTokens(src, tokens = []) {
+    let maskedSrc = src;
+    let match = null;
+    if (this.tokens.links) {
+      const links = Object.keys(this.tokens.links);
+      if (links.length > 0) {
+        while ((match = this.tokenizer.rules.inline.reflinkSearch.exec(maskedSrc)) != null) {
+          if (links.includes(match[0].slice(match[0].lastIndexOf("[") + 1, -1))) {
+            maskedSrc = maskedSrc.slice(0, match.index) + "[" + "a".repeat(match[0].length - 2) + "]" + maskedSrc.slice(this.tokenizer.rules.inline.reflinkSearch.lastIndex);
+          }
+        }
+      }
+    }
+    while ((match = this.tokenizer.rules.inline.anyPunctuation.exec(maskedSrc)) != null) {
+      maskedSrc = maskedSrc.slice(0, match.index) + "++" + maskedSrc.slice(this.tokenizer.rules.inline.anyPunctuation.lastIndex);
+    }
+    while ((match = this.tokenizer.rules.inline.blockSkip.exec(maskedSrc)) != null) {
+      maskedSrc = maskedSrc.slice(0, match.index) + "[" + "a".repeat(match[0].length - 2) + "]" + maskedSrc.slice(this.tokenizer.rules.inline.blockSkip.lastIndex);
+    }
+    let keepPrevChar = false;
+    let prevChar = "";
+    while (src) {
+      if (!keepPrevChar) {
+        prevChar = "";
+      }
+      keepPrevChar = false;
+      let token;
+      if (this.options.extensions?.inline?.some((extTokenizer) => {
+        if (token = extTokenizer.call({ lexer: this }, src, tokens)) {
+          src = src.substring(token.raw.length);
+          tokens.push(token);
+          return true;
+        }
+        return false;
+      })) {
+        continue;
+      }
+      if (token = this.tokenizer.escape(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.tag(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.link(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.reflink(src, this.tokens.links)) {
+        src = src.substring(token.raw.length);
+        const lastToken = tokens.at(-1);
+        if (token.type === "text" && lastToken?.type === "text") {
+          lastToken.raw += token.raw;
+          lastToken.text += token.text;
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (token = this.tokenizer.emStrong(src, maskedSrc, prevChar)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.codespan(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.br(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.del(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.autolink(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (!this.state.inLink && (token = this.tokenizer.url(src))) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      let cutSrc = src;
+      if (this.options.extensions?.startInline) {
+        let startIndex = Infinity;
+        const tempSrc = src.slice(1);
+        let tempStart;
+        this.options.extensions.startInline.forEach((getStartIndex) => {
+          tempStart = getStartIndex.call({ lexer: this }, tempSrc);
+          if (typeof tempStart === "number" && tempStart >= 0) {
+            startIndex = Math.min(startIndex, tempStart);
+          }
+        });
+        if (startIndex < Infinity && startIndex >= 0) {
+          cutSrc = src.substring(0, startIndex + 1);
+        }
+      }
+      if (token = this.tokenizer.inlineText(cutSrc)) {
+        src = src.substring(token.raw.length);
+        if (token.raw.slice(-1) !== "_") {
+          prevChar = token.raw.slice(-1);
+        }
+        keepPrevChar = true;
+        const lastToken = tokens.at(-1);
+        if (lastToken?.type === "text") {
+          lastToken.raw += token.raw;
+          lastToken.text += token.text;
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (src) {
+        const errMsg = "Infinite loop on byte: " + src.charCodeAt(0);
+        if (this.options.silent) {
+          console.error(errMsg);
+          break;
+        } else {
+          throw new Error(errMsg);
+        }
+      }
+    }
+    return tokens;
+  }
+};
+
+// src/Renderer.ts
+var _Renderer = class {
+  options;
+  parser;
+  // set by the parser
+  constructor(options2) {
+    this.options = options2 || _defaults;
+  }
+  space(token) {
+    return "";
+  }
+  code({ text, lang, escaped }) {
+    const langString = (lang || "").match(other.notSpaceStart)?.[0];
+    const code = text.replace(other.endingNewline, "") + "\n";
+    if (!langString) {
+      return "<pre><code>" + (escaped ? code : escape2(code, true)) + "</code></pre>\n";
+    }
+    return '<pre><code class="language-' + escape2(langString) + '">' + (escaped ? code : escape2(code, true)) + "</code></pre>\n";
+  }
+  blockquote({ tokens }) {
+    const body = this.parser.parse(tokens);
+    return `<blockquote>
+${body}</blockquote>
+`;
+  }
+  html({ text }) {
+    return text;
+  }
+  heading({ tokens, depth }) {
+    return `<h${depth}>${this.parser.parseInline(tokens)}</h${depth}>
+`;
+  }
+  hr(token) {
+    return "<hr>\n";
+  }
+  list(token) {
+    const ordered = token.ordered;
+    const start = token.start;
+    let body = "";
+    for (let j = 0; j < token.items.length; j++) {
+      const item = token.items[j];
+      body += this.listitem(item);
+    }
+    const type = ordered ? "ol" : "ul";
+    const startAttr = ordered && start !== 1 ? ' start="' + start + '"' : "";
+    return "<" + type + startAttr + ">\n" + body + "</" + type + ">\n";
+  }
+  listitem(item) {
+    let itemBody = "";
+    if (item.task) {
+      const checkbox = this.checkbox({ checked: !!item.checked });
+      if (item.loose) {
+        if (item.tokens[0]?.type === "paragraph") {
+          item.tokens[0].text = checkbox + " " + item.tokens[0].text;
+          if (item.tokens[0].tokens && item.tokens[0].tokens.length > 0 && item.tokens[0].tokens[0].type === "text") {
+            item.tokens[0].tokens[0].text = checkbox + " " + escape2(item.tokens[0].tokens[0].text);
+            item.tokens[0].tokens[0].escaped = true;
+          }
+        } else {
+          item.tokens.unshift({
+            type: "text",
+            raw: checkbox + " ",
+            text: checkbox + " ",
+            escaped: true
+          });
+        }
+      } else {
+        itemBody += checkbox + " ";
+      }
+    }
+    itemBody += this.parser.parse(item.tokens, !!item.loose);
+    return `<li>${itemBody}</li>
+`;
+  }
+  checkbox({ checked }) {
+    return "<input " + (checked ? 'checked="" ' : "") + 'disabled="" type="checkbox">';
+  }
+  paragraph({ tokens }) {
+    return `<p>${this.parser.parseInline(tokens)}</p>
+`;
+  }
+  table(token) {
+    let header = "";
+    let cell = "";
+    for (let j = 0; j < token.header.length; j++) {
+      cell += this.tablecell(token.header[j]);
+    }
+    header += this.tablerow({ text: cell });
+    let body = "";
+    for (let j = 0; j < token.rows.length; j++) {
+      const row = token.rows[j];
+      cell = "";
+      for (let k = 0; k < row.length; k++) {
+        cell += this.tablecell(row[k]);
+      }
+      body += this.tablerow({ text: cell });
+    }
+    if (body) body = `<tbody>${body}</tbody>`;
+    return "<table>\n<thead>\n" + header + "</thead>\n" + body + "</table>\n";
+  }
+  tablerow({ text }) {
+    return `<tr>
+${text}</tr>
+`;
+  }
+  tablecell(token) {
+    const content = this.parser.parseInline(token.tokens);
+    const type = token.header ? "th" : "td";
+    const tag2 = token.align ? `<${type} align="${token.align}">` : `<${type}>`;
+    return tag2 + content + `</${type}>
+`;
+  }
+  /**
+   * span level renderer
+   */
+  strong({ tokens }) {
+    return `<strong>${this.parser.parseInline(tokens)}</strong>`;
+  }
+  em({ tokens }) {
+    return `<em>${this.parser.parseInline(tokens)}</em>`;
+  }
+  codespan({ text }) {
+    return `<code>${escape2(text, true)}</code>`;
+  }
+  br(token) {
+    return "<br>";
+  }
+  del({ tokens }) {
+    return `<del>${this.parser.parseInline(tokens)}</del>`;
+  }
+  link({ href, title, tokens }) {
+    const text = this.parser.parseInline(tokens);
+    const cleanHref = cleanUrl(href);
+    if (cleanHref === null) {
+      return text;
+    }
+    href = cleanHref;
+    let out = '<a href="' + href + '"';
+    if (title) {
+      out += ' title="' + escape2(title) + '"';
+    }
+    out += ">" + text + "</a>";
+    return out;
+  }
+  image({ href, title, text, tokens }) {
+    if (tokens) {
+      text = this.parser.parseInline(tokens, this.parser.textRenderer);
+    }
+    const cleanHref = cleanUrl(href);
+    if (cleanHref === null) {
+      return escape2(text);
+    }
+    href = cleanHref;
+    let out = `<img src="${href}" alt="${text}"`;
+    if (title) {
+      out += ` title="${escape2(title)}"`;
+    }
+    out += ">";
+    return out;
+  }
+  text(token) {
+    return "tokens" in token && token.tokens ? this.parser.parseInline(token.tokens) : "escaped" in token && token.escaped ? token.text : escape2(token.text);
+  }
+};
+
+// src/TextRenderer.ts
+var _TextRenderer = class {
+  // no need for block level renderers
+  strong({ text }) {
+    return text;
+  }
+  em({ text }) {
+    return text;
+  }
+  codespan({ text }) {
+    return text;
+  }
+  del({ text }) {
+    return text;
+  }
+  html({ text }) {
+    return text;
+  }
+  text({ text }) {
+    return text;
+  }
+  link({ text }) {
+    return "" + text;
+  }
+  image({ text }) {
+    return "" + text;
+  }
+  br() {
+    return "";
+  }
+};
+
+// src/Parser.ts
+var _Parser = class __Parser {
+  options;
+  renderer;
+  textRenderer;
+  constructor(options2) {
+    this.options = options2 || _defaults;
+    this.options.renderer = this.options.renderer || new _Renderer();
+    this.renderer = this.options.renderer;
+    this.renderer.options = this.options;
+    this.renderer.parser = this;
+    this.textRenderer = new _TextRenderer();
+  }
+  /**
+   * Static Parse Method
+   */
+  static parse(tokens, options2) {
+    const parser2 = new __Parser(options2);
+    return parser2.parse(tokens);
+  }
+  /**
+   * Static Parse Inline Method
+   */
+  static parseInline(tokens, options2) {
+    const parser2 = new __Parser(options2);
+    return parser2.parseInline(tokens);
+  }
+  /**
+   * Parse Loop
+   */
+  parse(tokens, top = true) {
+    let out = "";
+    for (let i = 0; i < tokens.length; i++) {
+      const anyToken = tokens[i];
+      if (this.options.extensions?.renderers?.[anyToken.type]) {
+        const genericToken = anyToken;
+        const ret = this.options.extensions.renderers[genericToken.type].call({ parser: this }, genericToken);
+        if (ret !== false || !["space", "hr", "heading", "code", "table", "blockquote", "list", "html", "paragraph", "text"].includes(genericToken.type)) {
+          out += ret || "";
+          continue;
+        }
+      }
+      const token = anyToken;
+      switch (token.type) {
+        case "space": {
+          out += this.renderer.space(token);
+          continue;
+        }
+        case "hr": {
+          out += this.renderer.hr(token);
+          continue;
+        }
+        case "heading": {
+          out += this.renderer.heading(token);
+          continue;
+        }
+        case "code": {
+          out += this.renderer.code(token);
+          continue;
+        }
+        case "table": {
+          out += this.renderer.table(token);
+          continue;
+        }
+        case "blockquote": {
+          out += this.renderer.blockquote(token);
+          continue;
+        }
+        case "list": {
+          out += this.renderer.list(token);
+          continue;
+        }
+        case "html": {
+          out += this.renderer.html(token);
+          continue;
+        }
+        case "paragraph": {
+          out += this.renderer.paragraph(token);
+          continue;
+        }
+        case "text": {
+          let textToken = token;
+          let body = this.renderer.text(textToken);
+          while (i + 1 < tokens.length && tokens[i + 1].type === "text") {
+            textToken = tokens[++i];
+            body += "\n" + this.renderer.text(textToken);
+          }
+          if (top) {
+            out += this.renderer.paragraph({
+              type: "paragraph",
+              raw: body,
+              text: body,
+              tokens: [{ type: "text", raw: body, text: body, escaped: true }]
+            });
+          } else {
+            out += body;
+          }
+          continue;
+        }
+        default: {
+          const errMsg = 'Token with "' + token.type + '" type was not found.';
+          if (this.options.silent) {
+            console.error(errMsg);
+            return "";
+          } else {
+            throw new Error(errMsg);
+          }
+        }
+      }
+    }
+    return out;
+  }
+  /**
+   * Parse Inline Tokens
+   */
+  parseInline(tokens, renderer = this.renderer) {
+    let out = "";
+    for (let i = 0; i < tokens.length; i++) {
+      const anyToken = tokens[i];
+      if (this.options.extensions?.renderers?.[anyToken.type]) {
+        const ret = this.options.extensions.renderers[anyToken.type].call({ parser: this }, anyToken);
+        if (ret !== false || !["escape", "html", "link", "image", "strong", "em", "codespan", "br", "del", "text"].includes(anyToken.type)) {
+          out += ret || "";
+          continue;
+        }
+      }
+      const token = anyToken;
+      switch (token.type) {
+        case "escape": {
+          out += renderer.text(token);
+          break;
+        }
+        case "html": {
+          out += renderer.html(token);
+          break;
+        }
+        case "link": {
+          out += renderer.link(token);
+          break;
+        }
+        case "image": {
+          out += renderer.image(token);
+          break;
+        }
+        case "strong": {
+          out += renderer.strong(token);
+          break;
+        }
+        case "em": {
+          out += renderer.em(token);
+          break;
+        }
+        case "codespan": {
+          out += renderer.codespan(token);
+          break;
+        }
+        case "br": {
+          out += renderer.br(token);
+          break;
+        }
+        case "del": {
+          out += renderer.del(token);
+          break;
+        }
+        case "text": {
+          out += renderer.text(token);
+          break;
+        }
+        default: {
+          const errMsg = 'Token with "' + token.type + '" type was not found.';
+          if (this.options.silent) {
+            console.error(errMsg);
+            return "";
+          } else {
+            throw new Error(errMsg);
+          }
+        }
+      }
+    }
+    return out;
+  }
+};
+
+// src/Hooks.ts
+var _Hooks = class {
+  options;
+  block;
+  constructor(options2) {
+    this.options = options2 || _defaults;
+  }
+  static passThroughHooks = /* @__PURE__ */ new Set([
+    "preprocess",
+    "postprocess",
+    "processAllTokens"
+  ]);
+  /**
+   * Process markdown before marked
+   */
+  preprocess(markdown) {
+    return markdown;
+  }
+  /**
+   * Process HTML after marked is finished
+   */
+  postprocess(html2) {
+    return html2;
+  }
+  /**
+   * Process all tokens before walk tokens
+   */
+  processAllTokens(tokens) {
+    return tokens;
+  }
+  /**
+   * Provide function to tokenize markdown
+   */
+  provideLexer() {
+    return this.block ? _Lexer.lex : _Lexer.lexInline;
+  }
+  /**
+   * Provide function to parse tokens
+   */
+  provideParser() {
+    return this.block ? _Parser.parse : _Parser.parseInline;
+  }
+};
+
+// src/Instance.ts
+var Marked = class {
+  defaults = _getDefaults();
+  options = this.setOptions;
+  parse = this.parseMarkdown(true);
+  parseInline = this.parseMarkdown(false);
+  Parser = _Parser;
+  Renderer = _Renderer;
+  TextRenderer = _TextRenderer;
+  Lexer = _Lexer;
+  Tokenizer = _Tokenizer;
+  Hooks = _Hooks;
+  constructor(...args) {
+    this.use(...args);
+  }
+  /**
+   * Run callback for every token
+   */
+  walkTokens(tokens, callback) {
+    let values = [];
+    for (const token of tokens) {
+      values = values.concat(callback.call(this, token));
+      switch (token.type) {
+        case "table": {
+          const tableToken = token;
+          for (const cell of tableToken.header) {
+            values = values.concat(this.walkTokens(cell.tokens, callback));
+          }
+          for (const row of tableToken.rows) {
+            for (const cell of row) {
+              values = values.concat(this.walkTokens(cell.tokens, callback));
+            }
+          }
+          break;
+        }
+        case "list": {
+          const listToken = token;
+          values = values.concat(this.walkTokens(listToken.items, callback));
+          break;
+        }
+        default: {
+          const genericToken = token;
+          if (this.defaults.extensions?.childTokens?.[genericToken.type]) {
+            this.defaults.extensions.childTokens[genericToken.type].forEach((childTokens) => {
+              const tokens2 = genericToken[childTokens].flat(Infinity);
+              values = values.concat(this.walkTokens(tokens2, callback));
+            });
+          } else if (genericToken.tokens) {
+            values = values.concat(this.walkTokens(genericToken.tokens, callback));
+          }
+        }
+      }
+    }
+    return values;
+  }
+  use(...args) {
+    const extensions = this.defaults.extensions || { renderers: {}, childTokens: {} };
+    args.forEach((pack) => {
+      const opts = { ...pack };
+      opts.async = this.defaults.async || opts.async || false;
+      if (pack.extensions) {
+        pack.extensions.forEach((ext) => {
+          if (!ext.name) {
+            throw new Error("extension name required");
+          }
+          if ("renderer" in ext) {
+            const prevRenderer = extensions.renderers[ext.name];
+            if (prevRenderer) {
+              extensions.renderers[ext.name] = function(...args2) {
+                let ret = ext.renderer.apply(this, args2);
+                if (ret === false) {
+                  ret = prevRenderer.apply(this, args2);
+                }
+                return ret;
+              };
+            } else {
+              extensions.renderers[ext.name] = ext.renderer;
+            }
+          }
+          if ("tokenizer" in ext) {
+            if (!ext.level || ext.level !== "block" && ext.level !== "inline") {
+              throw new Error("extension level must be 'block' or 'inline'");
+            }
+            const extLevel = extensions[ext.level];
+            if (extLevel) {
+              extLevel.unshift(ext.tokenizer);
+            } else {
+              extensions[ext.level] = [ext.tokenizer];
+            }
+            if (ext.start) {
+              if (ext.level === "block") {
+                if (extensions.startBlock) {
+                  extensions.startBlock.push(ext.start);
+                } else {
+                  extensions.startBlock = [ext.start];
+                }
+              } else if (ext.level === "inline") {
+                if (extensions.startInline) {
+                  extensions.startInline.push(ext.start);
+                } else {
+                  extensions.startInline = [ext.start];
+                }
+              }
+            }
+          }
+          if ("childTokens" in ext && ext.childTokens) {
+            extensions.childTokens[ext.name] = ext.childTokens;
+          }
+        });
+        opts.extensions = extensions;
+      }
+      if (pack.renderer) {
+        const renderer = this.defaults.renderer || new _Renderer(this.defaults);
+        for (const prop in pack.renderer) {
+          if (!(prop in renderer)) {
+            throw new Error(`renderer '${prop}' does not exist`);
+          }
+          if (["options", "parser"].includes(prop)) {
+            continue;
+          }
+          const rendererProp = prop;
+          const rendererFunc = pack.renderer[rendererProp];
+          const prevRenderer = renderer[rendererProp];
+          renderer[rendererProp] = (...args2) => {
+            let ret = rendererFunc.apply(renderer, args2);
+            if (ret === false) {
+              ret = prevRenderer.apply(renderer, args2);
+            }
+            return ret || "";
+          };
+        }
+        opts.renderer = renderer;
+      }
+      if (pack.tokenizer) {
+        const tokenizer = this.defaults.tokenizer || new _Tokenizer(this.defaults);
+        for (const prop in pack.tokenizer) {
+          if (!(prop in tokenizer)) {
+            throw new Error(`tokenizer '${prop}' does not exist`);
+          }
+          if (["options", "rules", "lexer"].includes(prop)) {
+            continue;
+          }
+          const tokenizerProp = prop;
+          const tokenizerFunc = pack.tokenizer[tokenizerProp];
+          const prevTokenizer = tokenizer[tokenizerProp];
+          tokenizer[tokenizerProp] = (...args2) => {
+            let ret = tokenizerFunc.apply(tokenizer, args2);
+            if (ret === false) {
+              ret = prevTokenizer.apply(tokenizer, args2);
+            }
+            return ret;
+          };
+        }
+        opts.tokenizer = tokenizer;
+      }
+      if (pack.hooks) {
+        const hooks = this.defaults.hooks || new _Hooks();
+        for (const prop in pack.hooks) {
+          if (!(prop in hooks)) {
+            throw new Error(`hook '${prop}' does not exist`);
+          }
+          if (["options", "block"].includes(prop)) {
+            continue;
+          }
+          const hooksProp = prop;
+          const hooksFunc = pack.hooks[hooksProp];
+          const prevHook = hooks[hooksProp];
+          if (_Hooks.passThroughHooks.has(prop)) {
+            hooks[hooksProp] = (arg) => {
+              if (this.defaults.async) {
+                return Promise.resolve(hooksFunc.call(hooks, arg)).then((ret2) => {
+                  return prevHook.call(hooks, ret2);
+                });
+              }
+              const ret = hooksFunc.call(hooks, arg);
+              return prevHook.call(hooks, ret);
+            };
+          } else {
+            hooks[hooksProp] = (...args2) => {
+              let ret = hooksFunc.apply(hooks, args2);
+              if (ret === false) {
+                ret = prevHook.apply(hooks, args2);
+              }
+              return ret;
+            };
+          }
+        }
+        opts.hooks = hooks;
+      }
+      if (pack.walkTokens) {
+        const walkTokens2 = this.defaults.walkTokens;
+        const packWalktokens = pack.walkTokens;
+        opts.walkTokens = function(token) {
+          let values = [];
+          values.push(packWalktokens.call(this, token));
+          if (walkTokens2) {
+            values = values.concat(walkTokens2.call(this, token));
+          }
+          return values;
+        };
+      }
+      this.defaults = { ...this.defaults, ...opts };
+    });
+    return this;
+  }
+  setOptions(opt) {
+    this.defaults = { ...this.defaults, ...opt };
+    return this;
+  }
+  lexer(src, options2) {
+    return _Lexer.lex(src, options2 ?? this.defaults);
+  }
+  parser(tokens, options2) {
+    return _Parser.parse(tokens, options2 ?? this.defaults);
+  }
+  parseMarkdown(blockType) {
+    const parse2 = (src, options2) => {
+      const origOpt = { ...options2 };
+      const opt = { ...this.defaults, ...origOpt };
+      const throwError = this.onError(!!opt.silent, !!opt.async);
+      if (this.defaults.async === true && origOpt.async === false) {
+        return throwError(new Error("marked(): The async option was set to true by an extension. Remove async: false from the parse options object to return a Promise."));
+      }
+      if (typeof src === "undefined" || src === null) {
+        return throwError(new Error("marked(): input parameter is undefined or null"));
+      }
+      if (typeof src !== "string") {
+        return throwError(new Error("marked(): input parameter is of type " + Object.prototype.toString.call(src) + ", string expected"));
+      }
+      if (opt.hooks) {
+        opt.hooks.options = opt;
+        opt.hooks.block = blockType;
+      }
+      const lexer2 = opt.hooks ? opt.hooks.provideLexer() : blockType ? _Lexer.lex : _Lexer.lexInline;
+      const parser2 = opt.hooks ? opt.hooks.provideParser() : blockType ? _Parser.parse : _Parser.parseInline;
+      if (opt.async) {
+        return Promise.resolve(opt.hooks ? opt.hooks.preprocess(src) : src).then((src2) => lexer2(src2, opt)).then((tokens) => opt.hooks ? opt.hooks.processAllTokens(tokens) : tokens).then((tokens) => opt.walkTokens ? Promise.all(this.walkTokens(tokens, opt.walkTokens)).then(() => tokens) : tokens).then((tokens) => parser2(tokens, opt)).then((html2) => opt.hooks ? opt.hooks.postprocess(html2) : html2).catch(throwError);
+      }
+      try {
+        if (opt.hooks) {
+          src = opt.hooks.preprocess(src);
+        }
+        let tokens = lexer2(src, opt);
+        if (opt.hooks) {
+          tokens = opt.hooks.processAllTokens(tokens);
+        }
+        if (opt.walkTokens) {
+          this.walkTokens(tokens, opt.walkTokens);
+        }
+        let html2 = parser2(tokens, opt);
+        if (opt.hooks) {
+          html2 = opt.hooks.postprocess(html2);
+        }
+        return html2;
+      } catch (e) {
+        return throwError(e);
+      }
+    };
+    return parse2;
+  }
+  onError(silent, async) {
+    return (e) => {
+      e.message += "\nPlease report this to https://github.com/markedjs/marked.";
+      if (silent) {
+        const msg = "<p>An error occurred:</p><pre>" + escape2(e.message + "", true) + "</pre>";
+        if (async) {
+          return Promise.resolve(msg);
+        }
+        return msg;
+      }
+      if (async) {
+        return Promise.reject(e);
+      }
+      throw e;
+    };
+  }
+};
+
+// src/marked.ts
+var markedInstance = new Marked();
+function marked(src, opt) {
+  return markedInstance.parse(src, opt);
+}
+marked.options = marked.setOptions = function(options2) {
+  markedInstance.setOptions(options2);
+  marked.defaults = markedInstance.defaults;
+  changeDefaults(marked.defaults);
+  return marked;
+};
+marked.getDefaults = _getDefaults;
+marked.defaults = _defaults;
+marked.use = function(...args) {
+  markedInstance.use(...args);
+  marked.defaults = markedInstance.defaults;
+  changeDefaults(marked.defaults);
+  return marked;
+};
+marked.walkTokens = function(tokens, callback) {
+  return markedInstance.walkTokens(tokens, callback);
+};
+marked.parseInline = markedInstance.parseInline;
+marked.Parser = _Parser;
+marked.parser = _Parser.parse;
+marked.Renderer = _Renderer;
+marked.TextRenderer = _TextRenderer;
+marked.Lexer = _Lexer;
+marked.lexer = _Lexer.lex;
+marked.Tokenizer = _Tokenizer;
+marked.Hooks = _Hooks;
+marked.parse = marked;
+var options = marked.options;
+var setOptions = marked.setOptions;
+var use = marked.use;
+var walkTokens = marked.walkTokens;
+var parseInline = marked.parseInline;
+var parse = marked;
+var parser = _Parser.parse;
+var lexer = _Lexer.lex;
+
+if(__exports != exports)module.exports = exports;return module.exports}));
+
+
+</script>
+<script>/* turndown (github.com/mixmark-io/turndown) — MIT License */
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.TurndownService = factory());
+})(this, (function () { 'use strict';
+
+  function extend(destination) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) destination[key] = source[key];
+      }
+    }
+    return destination;
+  }
+  function repeat(character, count) {
+    return Array(count + 1).join(character);
+  }
+  function trimLeadingNewlines(string) {
+    return string.replace(/^\n*/, '');
+  }
+  function trimTrailingNewlines(string) {
+    // avoid match-at-end regexp bottleneck, see #370
+    var indexEnd = string.length;
+    while (indexEnd > 0 && string[indexEnd - 1] === '\n') indexEnd--;
+    return string.substring(0, indexEnd);
+  }
+  function trimNewlines(string) {
+    return trimTrailingNewlines(trimLeadingNewlines(string));
+  }
+  var blockElements = ['ADDRESS', 'ARTICLE', 'ASIDE', 'AUDIO', 'BLOCKQUOTE', 'BODY', 'CANVAS', 'CENTER', 'DD', 'DIR', 'DIV', 'DL', 'DT', 'FIELDSET', 'FIGCAPTION', 'FIGURE', 'FOOTER', 'FORM', 'FRAMESET', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HEADER', 'HGROUP', 'HR', 'HTML', 'ISINDEX', 'LI', 'MAIN', 'MENU', 'NAV', 'NOFRAMES', 'NOSCRIPT', 'OL', 'OUTPUT', 'P', 'PRE', 'SECTION', 'TABLE', 'TBODY', 'TD', 'TFOOT', 'TH', 'THEAD', 'TR', 'UL'];
+  function isBlock(node) {
+    return is(node, blockElements);
+  }
+  var voidElements = ['AREA', 'BASE', 'BR', 'COL', 'COMMAND', 'EMBED', 'HR', 'IMG', 'INPUT', 'KEYGEN', 'LINK', 'META', 'PARAM', 'SOURCE', 'TRACK', 'WBR'];
+  function isVoid(node) {
+    return is(node, voidElements);
+  }
+  function hasVoid(node) {
+    return has(node, voidElements);
+  }
+  var meaningfulWhenBlankElements = ['A', 'TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TH', 'TD', 'IFRAME', 'SCRIPT', 'AUDIO', 'VIDEO'];
+  function isMeaningfulWhenBlank(node) {
+    return is(node, meaningfulWhenBlankElements);
+  }
+  function hasMeaningfulWhenBlank(node) {
+    return has(node, meaningfulWhenBlankElements);
+  }
+  function is(node, tagNames) {
+    return tagNames.indexOf(node.nodeName) >= 0;
+  }
+  function has(node, tagNames) {
+    return node.getElementsByTagName && tagNames.some(function (tagName) {
+      return node.getElementsByTagName(tagName).length;
+    });
+  }
+  var markdownEscapes = [[/\\/g, '\\\\'], [/\*/g, '\\*'], [/^-/g, '\\-'], [/^\+ /g, '\\+ '], [/^(=+)/g, '\\$1'], [/^(#{1,6}) /g, '\\$1 '], [/`/g, '\\`'], [/^~~~/g, '\\~~~'], [/\[/g, '\\['], [/\]/g, '\\]'], [/^>/g, '\\>'], [/_/g, '\\_'], [/^(\d+)\. /g, '$1\\. ']];
+  function escapeMarkdown(string) {
+    return markdownEscapes.reduce(function (accumulator, escape) {
+      return accumulator.replace(escape[0], escape[1]);
+    }, string);
+  }
+
+  var rules = {};
+  rules.paragraph = {
+    filter: 'p',
+    replacement: function (content) {
+      return '\n\n' + content + '\n\n';
+    }
+  };
+  rules.lineBreak = {
+    filter: 'br',
+    replacement: function (content, node, options) {
+      return options.br + '\n';
+    }
+  };
+  rules.heading = {
+    filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+    replacement: function (content, node, options) {
+      var hLevel = Number(node.nodeName.charAt(1));
+      if (options.headingStyle === 'setext' && hLevel < 3) {
+        var underline = repeat(hLevel === 1 ? '=' : '-', content.length);
+        return '\n\n' + content + '\n' + underline + '\n\n';
+      } else {
+        return '\n\n' + repeat('#', hLevel) + ' ' + content + '\n\n';
+      }
+    }
+  };
+  rules.blockquote = {
+    filter: 'blockquote',
+    replacement: function (content) {
+      content = trimNewlines(content).replace(/^/gm, '> ');
+      return '\n\n' + content + '\n\n';
+    }
+  };
+  rules.list = {
+    filter: ['ul', 'ol'],
+    replacement: function (content, node) {
+      var parent = node.parentNode;
+      if (parent.nodeName === 'LI' && parent.lastElementChild === node) {
+        return '\n' + content;
+      } else {
+        return '\n\n' + content + '\n\n';
+      }
+    }
+  };
+  rules.listItem = {
+    filter: 'li',
+    replacement: function (content, node, options) {
+      var prefix = options.bulletListMarker + '   ';
+      var parent = node.parentNode;
+      if (parent.nodeName === 'OL') {
+        var start = parent.getAttribute('start');
+        var index = Array.prototype.indexOf.call(parent.children, node);
+        prefix = (start ? Number(start) + index : index + 1) + '.  ';
+      }
+      var isParagraph = /\n$/.test(content);
+      content = trimNewlines(content) + (isParagraph ? '\n' : '');
+      content = content.replace(/\n/gm, '\n' + ' '.repeat(prefix.length)); // indent
+      return prefix + content + (node.nextSibling ? '\n' : '');
+    }
+  };
+  rules.indentedCodeBlock = {
+    filter: function (node, options) {
+      return options.codeBlockStyle === 'indented' && node.nodeName === 'PRE' && node.firstChild && node.firstChild.nodeName === 'CODE';
+    },
+    replacement: function (content, node, options) {
+      return '\n\n    ' + node.firstChild.textContent.replace(/\n/g, '\n    ') + '\n\n';
+    }
+  };
+  rules.fencedCodeBlock = {
+    filter: function (node, options) {
+      return options.codeBlockStyle === 'fenced' && node.nodeName === 'PRE' && node.firstChild && node.firstChild.nodeName === 'CODE';
+    },
+    replacement: function (content, node, options) {
+      var className = node.firstChild.getAttribute('class') || '';
+      var language = (className.match(/language-(\S+)/) || [null, ''])[1];
+      var code = node.firstChild.textContent;
+      var fenceChar = options.fence.charAt(0);
+      var fenceSize = 3;
+      var fenceInCodeRegex = new RegExp('^' + fenceChar + '{3,}', 'gm');
+      var match;
+      while (match = fenceInCodeRegex.exec(code)) {
+        if (match[0].length >= fenceSize) {
+          fenceSize = match[0].length + 1;
+        }
+      }
+      var fence = repeat(fenceChar, fenceSize);
+      return '\n\n' + fence + language + '\n' + code.replace(/\n$/, '') + '\n' + fence + '\n\n';
+    }
+  };
+  rules.horizontalRule = {
+    filter: 'hr',
+    replacement: function (content, node, options) {
+      return '\n\n' + options.hr + '\n\n';
+    }
+  };
+  rules.inlineLink = {
+    filter: function (node, options) {
+      return options.linkStyle === 'inlined' && node.nodeName === 'A' && node.getAttribute('href');
+    },
+    replacement: function (content, node) {
+      var href = escapeLinkDestination(node.getAttribute('href'));
+      var title = escapeLinkTitle(cleanAttribute(node.getAttribute('title')));
+      var titlePart = title ? ' "' + title + '"' : '';
+      return '[' + content + '](' + href + titlePart + ')';
+    }
+  };
+  rules.referenceLink = {
+    filter: function (node, options) {
+      return options.linkStyle === 'referenced' && node.nodeName === 'A' && node.getAttribute('href');
+    },
+    replacement: function (content, node, options) {
+      var href = escapeLinkDestination(node.getAttribute('href'));
+      var title = cleanAttribute(node.getAttribute('title'));
+      if (title) title = ' "' + escapeLinkTitle(title) + '"';
+      var replacement;
+      var reference;
+      switch (options.linkReferenceStyle) {
+        case 'collapsed':
+          replacement = '[' + content + '][]';
+          reference = '[' + content + ']: ' + href + title;
+          break;
+        case 'shortcut':
+          replacement = '[' + content + ']';
+          reference = '[' + content + ']: ' + href + title;
+          break;
+        default:
+          var id = this.references.length + 1;
+          replacement = '[' + content + '][' + id + ']';
+          reference = '[' + id + ']: ' + href + title;
+      }
+      this.references.push(reference);
+      return replacement;
+    },
+    references: [],
+    append: function (options) {
+      var references = '';
+      if (this.references.length) {
+        references = '\n\n' + this.references.join('\n') + '\n\n';
+        this.references = []; // Reset references
+      }
+      return references;
+    }
+  };
+  rules.emphasis = {
+    filter: ['em', 'i'],
+    replacement: function (content, node, options) {
+      if (!content.trim()) return '';
+      return options.emDelimiter + content + options.emDelimiter;
+    }
+  };
+  rules.strong = {
+    filter: ['strong', 'b'],
+    replacement: function (content, node, options) {
+      if (!content.trim()) return '';
+      return options.strongDelimiter + content + options.strongDelimiter;
+    }
+  };
+  rules.code = {
+    filter: function (node) {
+      var hasSiblings = node.previousSibling || node.nextSibling;
+      var isCodeBlock = node.parentNode.nodeName === 'PRE' && !hasSiblings;
+      return node.nodeName === 'CODE' && !isCodeBlock;
+    },
+    replacement: function (content) {
+      if (!content) return '';
+      content = content.replace(/\r?\n|\r/g, ' ');
+      var extraSpace = /^`|^ .*?[^ ].* $|`$/.test(content) ? ' ' : '';
+      var delimiter = '`';
+      var matches = content.match(/`+/gm) || [];
+      while (matches.indexOf(delimiter) !== -1) delimiter = delimiter + '`';
+      return delimiter + extraSpace + content + extraSpace + delimiter;
+    }
+  };
+  rules.image = {
+    filter: 'img',
+    replacement: function (content, node) {
+      var alt = escapeMarkdown(cleanAttribute(node.getAttribute('alt')));
+      var src = escapeLinkDestination(node.getAttribute('src') || '');
+      var title = cleanAttribute(node.getAttribute('title'));
+      var titlePart = title ? ' "' + escapeLinkTitle(title) + '"' : '';
+      return src ? '![' + alt + ']' + '(' + src + titlePart + ')' : '';
+    }
+  };
+  function cleanAttribute(attribute) {
+    return attribute ? attribute.replace(/(\n+\s*)+/g, '\n') : '';
+  }
+  function escapeLinkDestination(destination) {
+    var escaped = destination.replace(/([<>()])/g, '\\$1');
+    return escaped.indexOf(' ') >= 0 ? '<' + escaped + '>' : escaped;
+  }
+  function escapeLinkTitle(title) {
+    return title.replace(/"/g, '\\"');
+  }
+
+  /**
+   * Manages a collection of rules used to convert HTML to Markdown
+   */
+
+  function Rules(options) {
+    this.options = options;
+    this._keep = [];
+    this._remove = [];
+    this.blankRule = {
+      replacement: options.blankReplacement
+    };
+    this.keepReplacement = options.keepReplacement;
+    this.defaultRule = {
+      replacement: options.defaultReplacement
+    };
+    this.array = [];
+    for (var key in options.rules) this.array.push(options.rules[key]);
+  }
+  Rules.prototype = {
+    add: function (key, rule) {
+      this.array.unshift(rule);
+    },
+    keep: function (filter) {
+      this._keep.unshift({
+        filter: filter,
+        replacement: this.keepReplacement
+      });
+    },
+    remove: function (filter) {
+      this._remove.unshift({
+        filter: filter,
+        replacement: function () {
+          return '';
+        }
+      });
+    },
+    forNode: function (node) {
+      if (node.isBlank) return this.blankRule;
+      var rule;
+      if (rule = findRule(this.array, node, this.options)) return rule;
+      if (rule = findRule(this._keep, node, this.options)) return rule;
+      if (rule = findRule(this._remove, node, this.options)) return rule;
+      return this.defaultRule;
+    },
+    forEach: function (fn) {
+      for (var i = 0; i < this.array.length; i++) fn(this.array[i], i);
+    }
+  };
+  function findRule(rules, node, options) {
+    for (var i = 0; i < rules.length; i++) {
+      var rule = rules[i];
+      if (filterValue(rule, node, options)) return rule;
+    }
+    return undefined;
+  }
+  function filterValue(rule, node, options) {
+    var filter = rule.filter;
+    if (typeof filter === 'string') {
+      if (filter === node.nodeName.toLowerCase()) return true;
+    } else if (Array.isArray(filter)) {
+      if (filter.indexOf(node.nodeName.toLowerCase()) > -1) return true;
+    } else if (typeof filter === 'function') {
+      if (filter.call(rule, node, options)) return true;
+    } else {
+      throw new TypeError('`filter` needs to be a string, array, or function');
+    }
+  }
+
+  /**
+   * The collapseWhitespace function is adapted from collapse-whitespace
+   * by Luc Thevenard.
+   *
+   * The MIT License (MIT)
+   *
+   * Copyright (c) 2014 Luc Thevenard <lucthevenard@gmail.com>
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in
+   * all copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+   * THE SOFTWARE.
+   */
+
+  /**
+   * collapseWhitespace(options) removes extraneous whitespace from an the given element.
+   *
+   * @param {Object} options
+   */
+  function collapseWhitespace(options) {
+    var element = options.element;
+    var isBlock = options.isBlock;
+    var isVoid = options.isVoid;
+    var isPre = options.isPre || function (node) {
+      return node.nodeName === 'PRE';
+    };
+    if (!element.firstChild || isPre(element)) return;
+    var prevText = null;
+    var keepLeadingWs = false;
+    var prev = null;
+    var node = next(prev, element, isPre);
+    while (node !== element) {
+      if (node.nodeType === 3 || node.nodeType === 4) {
+        // Node.TEXT_NODE or Node.CDATA_SECTION_NODE
+        var text = node.data.replace(/[ \r\n\t]+/g, ' ');
+        if ((!prevText || / $/.test(prevText.data)) && !keepLeadingWs && text[0] === ' ') {
+          text = text.substr(1);
+        }
+
+        // `text` might be empty at this point.
+        if (!text) {
+          node = remove(node);
+          continue;
+        }
+        node.data = text;
+        prevText = node;
+      } else if (node.nodeType === 1) {
+        // Node.ELEMENT_NODE
+        if (isBlock(node) || node.nodeName === 'BR') {
+          if (prevText) {
+            prevText.data = prevText.data.replace(/ $/, '');
+          }
+          prevText = null;
+          keepLeadingWs = false;
+        } else if (isVoid(node) || isPre(node)) {
+          // Avoid trimming space around non-block, non-BR void elements and inline PRE.
+          prevText = null;
+          keepLeadingWs = true;
+        } else if (prevText) {
+          // Drop protection if set previously.
+          keepLeadingWs = false;
+        }
+      } else {
+        node = remove(node);
+        continue;
+      }
+      var nextNode = next(prev, node, isPre);
+      prev = node;
+      node = nextNode;
+    }
+    if (prevText) {
+      prevText.data = prevText.data.replace(/ $/, '');
+      if (!prevText.data) {
+        remove(prevText);
+      }
+    }
+  }
+
+  /**
+   * remove(node) removes the given node from the DOM and returns the
+   * next node in the sequence.
+   *
+   * @param {Node} node
+   * @return {Node} node
+   */
+  function remove(node) {
+    var next = node.nextSibling || node.parentNode;
+    node.parentNode.removeChild(node);
+    return next;
+  }
+
+  /**
+   * next(prev, current, isPre) returns the next node in the sequence, given the
+   * current and previous nodes.
+   *
+   * @param {Node} prev
+   * @param {Node} current
+   * @param {Function} isPre
+   * @return {Node}
+   */
+  function next(prev, current, isPre) {
+    if (prev && prev.parentNode === current || isPre(current)) {
+      return current.nextSibling || current.parentNode;
+    }
+    return current.firstChild || current.nextSibling || current.parentNode;
+  }
+
+  /*
+   * Set up window for Node.js
+   */
+
+  var root = typeof window !== 'undefined' ? window : {};
+
+  /*
+   * Parsing HTML strings
+   */
+
+  function canParseHTMLNatively() {
+    var Parser = root.DOMParser;
+    var canParse = false;
+
+    // Adapted from https://gist.github.com/1129031
+    // Firefox/Opera/IE throw errors on unsupported types
+    try {
+      // WebKit returns null on unsupported types
+      if (new Parser().parseFromString('', 'text/html')) {
+        canParse = true;
+      }
+    } catch (e) {}
+    return canParse;
+  }
+  function createHTMLParser() {
+    var Parser = function () {};
+    {
+      if (shouldUseActiveX()) {
+        Parser.prototype.parseFromString = function (string) {
+          var doc = new window.ActiveXObject('htmlfile');
+          doc.designMode = 'on'; // disable on-page scripts
+          doc.open();
+          doc.write(string);
+          doc.close();
+          return doc;
+        };
+      } else {
+        Parser.prototype.parseFromString = function (string) {
+          var doc = document.implementation.createHTMLDocument('');
+          doc.open();
+          doc.write(string);
+          doc.close();
+          return doc;
+        };
+      }
+    }
+    return Parser;
+  }
+  function shouldUseActiveX() {
+    var useActiveX = false;
+    try {
+      document.implementation.createHTMLDocument('').open();
+    } catch (e) {
+      if (root.ActiveXObject) useActiveX = true;
+    }
+    return useActiveX;
+  }
+  var HTMLParser = canParseHTMLNatively() ? root.DOMParser : createHTMLParser();
+
+  function RootNode(input, options) {
+    var root;
+    if (typeof input === 'string') {
+      var doc = htmlParser().parseFromString(
+      // DOM parsers arrange elements in the <head> and <body>.
+      // Wrapping in a custom element ensures elements are reliably arranged in
+      // a single element.
+      '<x-turndown id="turndown-root">' + input + '</x-turndown>', 'text/html');
+      root = doc.getElementById('turndown-root');
+    } else {
+      root = input.cloneNode(true);
+    }
+    collapseWhitespace({
+      element: root,
+      isBlock: isBlock,
+      isVoid: isVoid,
+      isPre: options.preformattedCode ? isPreOrCode : null
+    });
+    return root;
+  }
+  var _htmlParser;
+  function htmlParser() {
+    _htmlParser = _htmlParser || new HTMLParser();
+    return _htmlParser;
+  }
+  function isPreOrCode(node) {
+    return node.nodeName === 'PRE' || node.nodeName === 'CODE';
+  }
+
+  function Node(node, options) {
+    node.isBlock = isBlock(node);
+    node.isCode = node.nodeName === 'CODE' || node.parentNode.isCode;
+    node.isBlank = isBlank(node);
+    node.flankingWhitespace = flankingWhitespace(node, options);
+    return node;
+  }
+  function isBlank(node) {
+    return !isVoid(node) && !isMeaningfulWhenBlank(node) && /^\s*$/i.test(node.textContent) && !hasVoid(node) && !hasMeaningfulWhenBlank(node);
+  }
+  function flankingWhitespace(node, options) {
+    if (node.isBlock || options.preformattedCode && node.isCode) {
+      return {
+        leading: '',
+        trailing: ''
+      };
+    }
+    var edges = edgeWhitespace(node.textContent);
+
+    // abandon leading ASCII WS if left-flanked by ASCII WS
+    if (edges.leadingAscii && isFlankedByWhitespace('left', node, options)) {
+      edges.leading = edges.leadingNonAscii;
+    }
+
+    // abandon trailing ASCII WS if right-flanked by ASCII WS
+    if (edges.trailingAscii && isFlankedByWhitespace('right', node, options)) {
+      edges.trailing = edges.trailingNonAscii;
+    }
+    return {
+      leading: edges.leading,
+      trailing: edges.trailing
+    };
+  }
+  function edgeWhitespace(string) {
+    var m = string.match(/^(([ \t\r\n]*)(\s*))(?:(?=\S)[\s\S]*\S)?((\s*?)([ \t\r\n]*))$/);
+    return {
+      leading: m[1],
+      // whole string for whitespace-only strings
+      leadingAscii: m[2],
+      leadingNonAscii: m[3],
+      trailing: m[4],
+      // empty for whitespace-only strings
+      trailingNonAscii: m[5],
+      trailingAscii: m[6]
+    };
+  }
+  function isFlankedByWhitespace(side, node, options) {
+    var sibling;
+    var regExp;
+    var isFlanked;
+    if (side === 'left') {
+      sibling = node.previousSibling;
+      regExp = / $/;
+    } else {
+      sibling = node.nextSibling;
+      regExp = /^ /;
+    }
+    if (sibling) {
+      if (sibling.nodeType === 3) {
+        isFlanked = regExp.test(sibling.nodeValue);
+      } else if (options.preformattedCode && sibling.nodeName === 'CODE') {
+        isFlanked = false;
+      } else if (sibling.nodeType === 1 && !isBlock(sibling)) {
+        isFlanked = regExp.test(sibling.textContent);
+      }
+    }
+    return isFlanked;
+  }
+
+  var reduce = Array.prototype.reduce;
+  function TurndownService(options) {
+    if (!(this instanceof TurndownService)) return new TurndownService(options);
+    var defaults = {
+      rules: rules,
+      headingStyle: 'setext',
+      hr: '* * *',
+      bulletListMarker: '*',
+      codeBlockStyle: 'indented',
+      fence: '```',
+      emDelimiter: '_',
+      strongDelimiter: '**',
+      linkStyle: 'inlined',
+      linkReferenceStyle: 'full',
+      br: '  ',
+      preformattedCode: false,
+      blankReplacement: function (content, node) {
+        return node.isBlock ? '\n\n' : '';
+      },
+      keepReplacement: function (content, node) {
+        return node.isBlock ? '\n\n' + node.outerHTML + '\n\n' : node.outerHTML;
+      },
+      defaultReplacement: function (content, node) {
+        return node.isBlock ? '\n\n' + content + '\n\n' : content;
+      }
+    };
+    this.options = extend({}, defaults, options);
+    this.rules = new Rules(this.options);
+  }
+  TurndownService.prototype = {
+    /**
+     * The entry point for converting a string or DOM node to Markdown
+     * @public
+     * @param {String|HTMLElement} input The string or DOM node to convert
+     * @returns A Markdown representation of the input
+     * @type String
+     */
+
+    turndown: function (input) {
+      if (!canConvert(input)) {
+        throw new TypeError(input + ' is not a string, or an element/document/fragment node.');
+      }
+      if (input === '') return '';
+      var output = process.call(this, new RootNode(input, this.options));
+      return postProcess.call(this, output);
+    },
+    /**
+     * Add one or more plugins
+     * @public
+     * @param {Function|Array} plugin The plugin or array of plugins to add
+     * @returns The Turndown instance for chaining
+     * @type Object
+     */
+
+    use: function (plugin) {
+      if (Array.isArray(plugin)) {
+        for (var i = 0; i < plugin.length; i++) this.use(plugin[i]);
+      } else if (typeof plugin === 'function') {
+        plugin(this);
+      } else {
+        throw new TypeError('plugin must be a Function or an Array of Functions');
+      }
+      return this;
+    },
+    /**
+     * Adds a rule
+     * @public
+     * @param {String} key The unique key of the rule
+     * @param {Object} rule The rule
+     * @returns The Turndown instance for chaining
+     * @type Object
+     */
+
+    addRule: function (key, rule) {
+      this.rules.add(key, rule);
+      return this;
+    },
+    /**
+     * Keep a node (as HTML) that matches the filter
+     * @public
+     * @param {String|Array|Function} filter The unique key of the rule
+     * @returns The Turndown instance for chaining
+     * @type Object
+     */
+
+    keep: function (filter) {
+      this.rules.keep(filter);
+      return this;
+    },
+    /**
+     * Remove a node that matches the filter
+     * @public
+     * @param {String|Array|Function} filter The unique key of the rule
+     * @returns The Turndown instance for chaining
+     * @type Object
+     */
+
+    remove: function (filter) {
+      this.rules.remove(filter);
+      return this;
+    },
+    /**
+     * Escapes Markdown syntax
+     * @public
+     * @param {String} string The string to escape
+     * @returns A string with Markdown syntax escaped
+     * @type String
+     */
+
+    escape: function (string) {
+      return escapeMarkdown(string);
+    }
+  };
+
+  /**
+   * Reduces a DOM node down to its Markdown string equivalent
+   * @private
+   * @param {HTMLElement} parentNode The node to convert
+   * @returns A Markdown representation of the node
+   * @type String
+   */
+
+  function process(parentNode) {
+    var self = this;
+    return reduce.call(parentNode.childNodes, function (output, node) {
+      node = new Node(node, self.options);
+      var replacement = '';
+      if (node.nodeType === 3) {
+        replacement = node.isCode ? node.nodeValue : self.escape(node.nodeValue);
+      } else if (node.nodeType === 1) {
+        replacement = replacementForNode.call(self, node);
+      }
+      return join(output, replacement);
+    }, '');
+  }
+
+  /**
+   * Appends strings as each rule requires and trims the output
+   * @private
+   * @param {String} output The conversion output
+   * @returns A trimmed version of the ouput
+   * @type String
+   */
+
+  function postProcess(output) {
+    var self = this;
+    this.rules.forEach(function (rule) {
+      if (typeof rule.append === 'function') {
+        output = join(output, rule.append(self.options));
+      }
+    });
+    return output.replace(/^[\t\r\n]+/, '').replace(/[\t\r\n\s]+$/, '');
+  }
+
+  /**
+   * Converts an element node to its Markdown equivalent
+   * @private
+   * @param {HTMLElement} node The node to convert
+   * @returns A Markdown representation of the node
+   * @type String
+   */
+
+  function replacementForNode(node) {
+    var rule = this.rules.forNode(node);
+    var content = process.call(this, node);
+    var whitespace = node.flankingWhitespace;
+    if (whitespace.leading || whitespace.trailing) content = content.trim();
+    return whitespace.leading + rule.replacement(content, node, this.options) + whitespace.trailing;
+  }
+
+  /**
+   * Joins replacement to the current output with appropriate number of new lines
+   * @private
+   * @param {String} output The current conversion output
+   * @param {String} replacement The string to append to the output
+   * @returns Joined output
+   * @type String
+   */
+
+  function join(output, replacement) {
+    var s1 = trimTrailingNewlines(output);
+    var s2 = trimLeadingNewlines(replacement);
+    var nls = Math.max(output.length - s1.length, replacement.length - s2.length);
+    var separator = '\n\n'.substring(0, nls);
+    return s1 + separator + s2;
+  }
+
+  /**
+   * Determines whether an input can be converted
+   * @private
+   * @param {String|HTMLElement} input Describe this parameter
+   * @returns Describe what it returns
+   * @type String|Object|Array|Boolean|Number
+   */
+
+  function canConvert(input) {
+    return input != null && (typeof input === 'string' || input.nodeType && (input.nodeType === 1 || input.nodeType === 9 || input.nodeType === 11));
+  }
+
+  return TurndownService;
+
+}));
+
+</script>
+<script>/* turndown-plugin-gfm (github.com/mixmark-io/turndown-plugin-gfm) — MIT License */
+var turndownPluginGfm = (function (exports) {
+'use strict';
+
+var highlightRegExp = /highlight-(?:text|source)-([a-z0-9]+)/;
+
+function highlightedCodeBlock (turndownService) {
+  turndownService.addRule('highlightedCodeBlock', {
+    filter: function (node) {
+      var firstChild = node.firstChild;
+      return (
+        node.nodeName === 'DIV' &&
+        highlightRegExp.test(node.className) &&
+        firstChild &&
+        firstChild.nodeName === 'PRE'
+      )
+    },
+    replacement: function (content, node, options) {
+      var className = node.className || '';
+      var language = (className.match(highlightRegExp) || [null, ''])[1];
+
+      return (
+        '\n\n' + options.fence + language + '\n' +
+        node.firstChild.textContent +
+        '\n' + options.fence + '\n\n'
+      )
+    }
+  });
+}
+
+function strikethrough (turndownService) {
+  turndownService.addRule('strikethrough', {
+    filter: ['del', 's', 'strike'],
+    replacement: function (content) {
+      return '~' + content + '~'
+    }
+  });
+}
+
+var indexOf = Array.prototype.indexOf;
+var every = Array.prototype.every;
+var rules = {};
+
+rules.tableCell = {
+  filter: ['th', 'td'],
+  replacement: function (content, node) {
+    return cell(content, node)
+  }
+};
+
+rules.tableRow = {
+  filter: 'tr',
+  replacement: function (content, node) {
+    var borderCells = '';
+    var alignMap = { left: ':--', right: '--:', center: ':-:' };
+
+    if (isHeadingRow(node)) {
+      for (var i = 0; i < node.childNodes.length; i++) {
+        var border = '---';
+        var align = (
+          node.childNodes[i].getAttribute('align') || ''
+        ).toLowerCase();
+
+        if (align) border = alignMap[align] || border;
+
+        borderCells += cell(border, node.childNodes[i]);
+      }
+    }
+    return '\n' + content + (borderCells ? '\n' + borderCells : '')
+  }
+};
+
+rules.table = {
+  // Only convert tables with a heading row.
+  // Tables with no heading row are kept using `keep` (see below).
+  filter: function (node) {
+    return node.nodeName === 'TABLE' && isHeadingRow(node.rows[0])
+  },
+
+  replacement: function (content) {
+    // Ensure there are no blank lines
+    content = content.replace('\n\n', '\n');
+    return '\n\n' + content + '\n\n'
+  }
+};
+
+rules.tableSection = {
+  filter: ['thead', 'tbody', 'tfoot'],
+  replacement: function (content) {
+    return content
+  }
+};
+
+// A tr is a heading row if:
+// - the parent is a THEAD
+// - or if its the first child of the TABLE or the first TBODY (possibly
+//   following a blank THEAD)
+// - and every cell is a TH
+function isHeadingRow (tr) {
+  var parentNode = tr.parentNode;
+  return (
+    parentNode.nodeName === 'THEAD' ||
+    (
+      parentNode.firstChild === tr &&
+      (parentNode.nodeName === 'TABLE' || isFirstTbody(parentNode)) &&
+      every.call(tr.childNodes, function (n) { return n.nodeName === 'TH' })
+    )
+  )
+}
+
+function isFirstTbody (element) {
+  var previousSibling = element.previousSibling;
+  return (
+    element.nodeName === 'TBODY' && (
+      !previousSibling ||
+      (
+        previousSibling.nodeName === 'THEAD' &&
+        /^\s*$/i.test(previousSibling.textContent)
+      )
+    )
+  )
+}
+
+function cell (content, node) {
+  var index = indexOf.call(node.parentNode.childNodes, node);
+  var prefix = ' ';
+  if (index === 0) prefix = '| ';
+  return prefix + content + ' |'
+}
+
+function tables (turndownService) {
+  turndownService.keep(function (node) {
+    return node.nodeName === 'TABLE' && !isHeadingRow(node.rows[0])
+  });
+  for (var key in rules) turndownService.addRule(key, rules[key]);
+}
+
+function taskListItems (turndownService) {
+  turndownService.addRule('taskListItems', {
+    filter: function (node) {
+      return node.type === 'checkbox' && node.parentNode.nodeName === 'LI'
+    },
+    replacement: function (content, node) {
+      return (node.checked ? '[x]' : '[ ]') + ' '
+    }
+  });
+}
+
+function gfm (turndownService) {
+  turndownService.use([
+    highlightedCodeBlock,
+    strikethrough,
+    tables,
+    taskListItems
+  ]);
+}
+
+exports.gfm = gfm;
+exports.highlightedCodeBlock = highlightedCodeBlock;
+exports.strikethrough = strikethrough;
+exports.tables = tables;
+exports.taskListItems = taskListItems;
+
+return exports;
+
+}({}));
+
+</script>
+
+<script>
+'use strict';
+// ───────────────────────── 설정 ─────────────────────────
+const REPO = 'taeholaw/leetaeho.com';
+const BRANCH = 'main';
+const SITE = 'https://leetaeho.com';
+const POST_DIR = 'src/content/writing';
+const IMG_DIR = 'public/images/uploads';
+const IMG_URL = '/images/uploads';
+const MAX_W = 2000;
+const CATEGORIES = ['실무노트', 'AI', '에세이'];
+
+const $ = (s) => document.querySelector(s);
+const ed = $('#ed'), srcBox = $('#src');
+
+// ───────────────────────── 저장소(IndexedDB) ─────────────────────────
+const db = {
+  _p: null,
+  open() {
+    return this._p ||= new Promise((res, rej) => {
+      const r = indexedDB.open('leetaeho-write', 1);
+      r.onupgradeneeded = () => {
+        r.result.createObjectStore('posts', { keyPath: 'id' });
+        r.result.createObjectStore('images');
+      };
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async tx(store, mode, fn) {
+    const d = await this.open();
+    return new Promise((res, rej) => {
+      const t = d.transaction(store, mode);
+      const out = fn(t.objectStore(store));
+      t.oncomplete = () => res(out && 'result' in out ? out.result : out);
+      t.onerror = () => rej(t.error);
+    });
+  },
+  get: (s, k) => db.tx(s, 'readonly', (o) => o.get(k)),
+  put: (s, v, k) => db.tx(s, 'readwrite', (o) => (k === undefined ? o.put(v) : o.put(v, k))),
+  del: (s, k) => db.tx(s, 'readwrite', (o) => o.delete(k)),
+  all: (s) => db.tx(s, 'readonly', (o) => o.getAll()),
+  async delImages(postId) {
+    const d = await this.open();
+    return new Promise((res) => {
+      const t = d.transaction('images', 'readwrite');
+      t.objectStore('images').delete(IDBKeyRange.bound(postId + '/', postId + '/￿'));
+      t.oncomplete = res; t.onerror = res;
+    });
+  },
+};
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+// ───────────────────────── 상태 ─────────────────────────
+let post = null;          // 지금 편집 중인 글
+let srcMode = false;      // 마크다운 원문 보기
+let saveTimer = null, lastSaved = null, dirty = false;
+const urlCache = new Map(); // "postId/이름" → blob URL
+
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const newPost = () => ({ id: uid(), title: '', slug: '', description: '', date: today(), category: '', cover: '', draft: false, body: '', path: '', imgSeq: 0, uploaded: {}, createdAt: Date.now(), updatedAt: 0, publishedAt: 0, extra: {} });
+
+// ───────────────────────── 마크다운 ↔ 편집 화면 ─────────────────────────
+marked.setOptions({ gfm: true, breaks: false });
+const td = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-', emDelimiter: '*', strongDelimiter: '**', codeBlockStyle: 'fenced', hr: '---' });
+td.use(turndownPluginGfm.tables);
+td.use(turndownPluginGfm.strikethrough);
+td.addRule('image', {
+  filter: 'img',
+  replacement: (c, n) => {
+    const alt = (n.getAttribute('alt') || '').replace(/[\[\]\n]/g, ' ').trim();
+    const src = n.dataset.local ? 'local:' + n.dataset.local : (n.dataset.src || n.getAttribute('src') || '');
+    return src ? `![${alt}](${src.replace(/ /g, '%20')})` : '';
+  },
+});
+td.addRule('emptyPara', { filter: (n) => n.nodeName === 'P' && !n.textContent.trim() && !n.querySelector('img'), replacement: () => '\n\n' });
+td.addRule('listItem', {
+  filter: 'li',
+  replacement: (content, node, opt) => {
+    content = content.replace(/^\n+/, '').replace(/\n+$/, '\n').replace(/\n/gm, '\n   ');
+    const parent = node.parentNode;
+    let prefix = opt.bulletListMarker + ' ';
+    if (parent.nodeName === 'OL') { const start = parent.getAttribute('start'); prefix = (start ? Number(start) : 1) + Array.prototype.indexOf.call(parent.children, node) + '. '; }
+    return prefix + content + (node.nextSibling && !/\n$/.test(content) ? '\n' : '');
+  },
+});
+td.addRule('underline', { filter: ['u', 'ins'], replacement: (c) => c });
+
+// 붙여 넣은 HTML·마크다운을 안전하게 정리하기 위한 허용 목록
+const ALLOW = new Set(['P','BR','H2','H3','H4','STRONG','B','EM','I','A','UL','OL','LI','BLOCKQUOTE','HR','IMG','TABLE','THEAD','TBODY','TR','TH','TD','CODE','PRE','DEL','S']);
+function sanitize(root) {
+  const walk = (node) => {
+    for (const el of [...node.children]) {
+      walk(el);
+      let tag = el.tagName;
+      if (tag === 'H1') { const h = document.createElement('h2'); h.append(...el.childNodes); el.replaceWith(h); continue; }
+      if (tag === 'H5' || tag === 'H6') { const h = document.createElement('h3'); h.append(...el.childNodes); el.replaceWith(h); continue; }
+      if (['SCRIPT','STYLE','IFRAME','OBJECT','EMBED','META','LINK','TITLE','svg','SVG','FORM','INPUT','BUTTON','TEMPLATE','NOSCRIPT'].includes(tag)) { el.remove(); continue; }
+      if (!ALLOW.has(tag)) { el.replaceWith(...el.childNodes); continue; }
+      for (const a of [...el.attributes]) {
+        const keep = (tag === 'A' && a.name === 'href') || (tag === 'IMG' && ['src', 'alt', 'data-local', 'data-src'].includes(a.name)) || ((tag === 'TH' || tag === 'TD') && a.name === 'align');
+        if (!keep) el.removeAttribute(a.name);
+      }
+      if (tag === 'A' && /^\s*javascript:/i.test(el.getAttribute('href') || '')) el.removeAttribute('href');
+    }
+  };
+  walk(root);
+  return root;
+}
+
+// DOMParser로 만들어야 사진 주소(local:)를 미리 불러오려다 생기는 오류가 없습니다
+function parseHTML(html) {
+  const doc = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html');
+  for (const img of doc.querySelectorAll('img')) {
+    const src = img.getAttribute('src') || '';
+    if (src.startsWith('local:')) { img.dataset.local = decodeURIComponent(src.slice(6)); img.removeAttribute('src'); }
+    else if (src.startsWith('/')) { img.dataset.src = src; img.setAttribute('src', SITE + src); }
+  }
+  return document.importNode(doc.body.firstChild, true);
+}
+function mdToHtml(md) { return sanitize(parseHTML(marked.parse(md || ''))); }
+
+async function imageURL(name) {
+  const key = post.id + '/' + name;
+  if (urlCache.has(key)) return urlCache.get(key);
+  const blob = await db.get('images', key);
+  if (!blob) return '';
+  const u = URL.createObjectURL(blob);
+  urlCache.set(key, u);
+  return u;
+}
+
+async function hydrateImages(root) {
+  for (const img of root.querySelectorAll('img')) {
+    if (img.dataset.local) {
+      const u = await imageURL(img.dataset.local);
+      if (u) img.src = u; else img.alt = '(이 기기에 없는 사진: ' + img.dataset.local + ')';
+    }
+  }
+}
+
+async function renderBody(md) {
+  const box = mdToHtml(md);
+  await hydrateImages(box);
+  ed.replaceChildren(...box.childNodes);
+  markCover();
+}
+
+function serialize() {
+  if (srcMode) return srcBox.value.trim();
+  const clone = ed.cloneNode(true);
+  clone.querySelectorAll('.sel, .cover-mark').forEach((n) => n.classList.remove('sel', 'cover-mark'));
+  return td.turndown(clone.innerHTML).replace(/\n{3,}/g, '\n\n').trim();
+}
+
+// ───────────────────────── 편집 화면 채우기 ─────────────────────────
+function fitTitle() { const t = $('#title'); t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
+
+async function load(p) {
+  post = p;
+  srcMode = false; srcBox.hidden = true; ed.hidden = false;
+  $('[data-cmd=source]').classList.remove('on');
+  $('#title').value = p.title || '';
+  $('#category').value = CATEGORIES.includes(p.category) ? p.category : '';
+  $('#date').value = p.date || today();
+  $('#slug').value = p.slug || '';
+  $('#desc').value = p.description || '';
+  fitTitle();
+  await renderBody(p.body);
+  renderCover();
+  updateCount();
+  localStorage.setItem('write.last', p.id);
+  dirty = false; lastSaved = p.updatedAt || null;
+  setStatus();
+}
+
+function collect() {
+  post.title = $('#title').value.trim();
+  post.category = $('#category').value;
+  post.date = $('#date').value || today();
+  post.slug = $('#slug').value.trim();
+  post.description = $('#desc').value.trim();
+  post.body = serialize();
+}
+
+async function save(quiet) {
+  if (!post) return;
+  clearTimeout(saveTimer);
+  collect();
+  post.updatedAt = Date.now();
+  await db.put('posts', post);
+  dirty = false; lastSaved = post.updatedAt;
+  setStatus();
+  if (!quiet) toast('저장했습니다');
+}
+function touch() {
+  dirty = true; setStatus();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => save(true), 700);
+}
+
+function setStatus() {
+  const off = navigator.onLine ? '' : '<span class="off">오프라인</span> · ';
+  let s;
+  if (dirty) s = '저장 중…';
+  else if (lastSaved) s = '저장됨 ' + new Date(lastSaved).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+  else s = '';
+  const pub = post && post.publishedAt ? ' · 발행됨' : '';
+  $('#status').innerHTML = off + s + pub;
+}
+addEventListener('online', setStatus);
+addEventListener('offline', setStatus);
+
+function updateCount() {
+  const text = srcMode ? srcBox.value : ed.innerText;
+  const n = text.replace(/\s/g, '').length;
+  const imgs = srcMode ? (srcBox.value.match(/!\[/g) || []).length : ed.querySelectorAll('img').length;
+  $('#count').textContent = `${n.toLocaleString()}자${imgs ? ` · 사진 ${imgs}장` : ''}`;
+}
+
+// ───────────────────────── 서식 ─────────────────────────
+document.execCommand('defaultParagraphSeparator', false, 'p');
+
+function blockOf(node) {
+  while (node && node !== ed) {
+    if (node.nodeType === 1 && /^(P|H2|H3|H4|LI|BLOCKQUOTE|PRE|DIV|TD|TH)$/.test(node.tagName)) return node;
+    node = node.parentNode;
+  }
+  return null;
+}
+function inEditor() {
+  const s = getSelection();
+  return s.rangeCount && ed.contains(s.anchorNode);
+}
+function ensureFocus() { if (!inEditor()) { ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } }
+
+function cmd(name) {
+  if (srcMode && name !== 'source') return toast('원문 보기에서는 직접 마크다운으로 쓰십시오');
+  if (name !== 'source' && name !== 'image') ensureFocus();
+  const b = blockOf(getSelection().anchorNode);
+  const tag = b ? b.tagName : '';
+  const inQuote = !!(getSelection().anchorNode && getSelection().anchorNode.parentElement && getSelection().anchorNode.parentElement.closest('blockquote'));
+  switch (name) {
+    case 'h2': document.execCommand('formatBlock', false, tag === 'H2' ? 'p' : 'h2'); break;
+    case 'h3': document.execCommand('formatBlock', false, tag === 'H3' ? 'p' : 'h3'); break;
+    case 'bold': document.execCommand('bold'); break;
+    case 'italic': document.execCommand('italic'); break;
+    case 'link': {
+      const cur = getSelection().anchorNode && getSelection().anchorNode.parentElement && getSelection().anchorNode.parentElement.closest('a');
+      const url = prompt('링크 주소 (지우려면 비워 두십시오)', cur ? cur.getAttribute('href') : 'https://');
+      if (url === null) break;
+      if (!url.trim() || url.trim() === 'https://') { document.execCommand('unlink'); break; }
+      if (getSelection().isCollapsed && !cur) document.execCommand('insertHTML', false, `<a href="${url.trim().replace(/"/g, '%22')}">${url.trim().replace(/</g, '&lt;')}</a>`);
+      else document.execCommand('createLink', false, url.trim());
+      break;
+    }
+    case 'quote':
+      if (inQuote) document.execCommand('outdent'), document.execCommand('formatBlock', false, 'p');
+      else document.execCommand('formatBlock', false, 'blockquote');
+      break;
+    case 'ul': document.execCommand('insertUnorderedList'); break;
+    case 'ol': document.execCommand('insertOrderedList'); break;
+    case 'hr': document.execCommand('insertHorizontalRule'); break;
+    case 'clear': document.execCommand('removeFormat'); if (/^H[23]$/.test(tag)) document.execCommand('formatBlock', false, 'p'); break;
+    case 'image': $('#filePick').click(); return;
+    case 'source': toggleSource(); return;
+  }
+  normalize();
+  touch();
+}
+$('#tools').addEventListener('mousedown', (e) => { if (e.target.closest('button')) e.preventDefault(); });
+$('#tools').addEventListener('click', (e) => { const b = e.target.closest('button[data-cmd]'); if (b) cmd(b.dataset.cmd); });
+
+// 브라우저가 만드는 div·span 정리
+function normalize() {
+  for (const d of ed.querySelectorAll(':scope > div')) { const p = document.createElement('p'); p.append(...d.childNodes); d.replaceWith(p); }
+  for (const s of ed.querySelectorAll('span, font')) s.replaceWith(...s.childNodes);
+  // 맨 바깥에 흩어진 글자·굵게 등은 한 문단으로 묶음
+  const BLOCK = /^(P|H[1-6]|UL|OL|BLOCKQUOTE|HR|TABLE|PRE|FIGURE)$/;
+  let group = null;
+  for (const n of [...ed.childNodes]) {
+    const inline = n.nodeType === 3 || (n.nodeType === 1 && !BLOCK.test(n.tagName));
+    if (!inline) { group = null; continue; }
+    if (n.nodeType === 1 && n.tagName === 'BR' && !group) { n.remove(); continue; }
+    if (!group) { if (n.nodeType === 3 && !n.textContent.trim()) continue; group = document.createElement('p'); n.before(group); }
+    group.append(n);
+  }
+}
+// 빈 편집기에 글을 쓰기 시작하면 문단 안에서 시작하도록
+ed.addEventListener('focus', () => {
+  if (!ed.firstChild) { ed.innerHTML = '<p><br></p>'; const r = document.createRange(); r.setStart(ed.firstChild, 0); r.collapse(true); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+});
+ed.addEventListener('blur', () => { if (!ed.textContent.trim() && !ed.querySelector('img,hr,table')) ed.innerHTML = ''; });
+
+async function toggleSource() {
+  if (!srcMode) {
+    srcBox.value = serialize();
+    srcMode = true; ed.hidden = true; srcBox.hidden = false; hideImgBar();
+  } else {
+    srcMode = false;
+    await renderBody(srcBox.value);
+    srcBox.hidden = true; ed.hidden = false;
+  }
+  $('[data-cmd=source]').classList.toggle('on', srcMode);
+  updateCount();
+}
+
+ed.addEventListener('input', () => { if ([...ed.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) { const s = getSelection(); const node = s.anchorNode, off = s.anchorOffset; normalize(); if (node && ed.contains(node)) s.collapse(node, off); } touch(); updateCount(); });
+srcBox.addEventListener('input', () => { touch(); updateCount(); });
+for (const id of ['#title', '#category', '#date', '#slug', '#desc']) $(id).addEventListener('input', () => { if (id === '#title') fitTitle(); if (id === '#slug') checkSlug(); touch(); });
+$('#title').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); ed.focus(); } });
+
+function checkSlug() {
+  const v = $('#slug').value.trim();
+  const bad = v && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v);
+  $('#slugHint').textContent = bad ? '영문 소문자·숫자·하이픈(-)만 쓸 수 있습니다.' : v ? `주소: ${SITE}/writing/${v}/` : '비워 두면 발행일과 시각으로 자동으로 정합니다.';
+  $('#slugHint').style.color = bad ? 'var(--warn)' : '';
+  return !bad;
+}
+$('#bMore').addEventListener('click', () => { const m = $('#more'); m.hidden = !m.hidden; $('#bMore').textContent = '글 정보 (주소·요약·대표 사진) ' + (m.hidden ? '▾' : '▴'); checkSlug(); });
+
+document.addEventListener('keydown', (e) => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); save(); }
+  if (mod && e.key.toLowerCase() === 'k' && inEditor()) { e.preventDefault(); cmd('link'); }
+});
+
+// ───────────────────────── 사진 ─────────────────────────
+function canvasBlob(c, type, q) { return new Promise((r) => c.toBlob(r, type, q)); }
+
+async function processImage(file) {
+  const type = (file.type || '').toLowerCase();
+  if (type === 'image/gif') return { blob: file, ext: 'gif' };
+  if (type === 'image/svg+xml') return { blob: file, ext: 'svg' };
+  let bmp;
+  try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+  catch {
+    if (/heic|heif/.test(type) || /\.hei[cf]$/i.test(file.name)) throw new Error('HEIC 사진은 이 브라우저에서 열 수 없습니다. JPG로 바꿔 넣으십시오.');
+    throw new Error('사진을 열 수 없습니다: ' + file.name);
+  }
+  const scale = Math.min(1, MAX_W / bmp.width);
+  const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  c.getContext('2d').drawImage(bmp, 0, 0, w, h);
+  bmp.close && bmp.close();
+  let blob = await canvasBlob(c, 'image/webp', 0.82), ext = 'webp';
+  if (!blob || blob.type !== 'image/webp') { blob = await canvasBlob(c, 'image/jpeg', 0.85); ext = 'jpg'; }
+  return { blob, ext };
+}
+
+async function addImages(files, range) {
+  files = [...files].filter((f) => f.type.startsWith('image/') || /\.(hei[cf]|jpe?g|png|webp|gif)$/i.test(f.name));
+  if (!files.length) return;
+  if (srcMode) await toggleSource();
+  if (range) { const s = getSelection(); s.removeAllRanges(); s.addRange(range); }
+  ensureFocus();
+  toast(`사진 ${files.length}장을 넣는 중…`);
+  let anchor = blockOf(getSelection().anchorNode);
+  let done = 0;
+  for (const f of files) {
+    try {
+      const { blob, ext } = await processImage(f);
+      post.imgSeq = (post.imgSeq || 0) + 1;
+      const name = `img-${post.imgSeq}.${ext}`;
+      await db.put('images', blob, post.id + '/' + name);
+      const url = URL.createObjectURL(blob); urlCache.set(post.id + '/' + name, url);
+      const p = document.createElement('p');
+      const img = document.createElement('img');
+      img.src = url; img.dataset.local = name; img.alt = '';
+      p.append(img);
+      if (anchor && anchor.parentNode && !anchor.textContent.trim() && !anchor.querySelector('img') && anchor.parentNode === ed) { anchor.replaceWith(p); }
+      else if (anchor && anchor.closest && anchor.closest('#ed > *')) { const top = anchor.closest('#ed > *'); top.after(p); }
+      else ed.append(p);
+      anchor = p; done++;
+    } catch (err) { toast(err.message, 4000); }
+  }
+  if (anchor && (!anchor.nextElementSibling)) { const np = document.createElement('p'); np.innerHTML = '<br>'; anchor.after(np); }
+  if (anchor && anchor.nextElementSibling) { const r = document.createRange(); r.setStart(anchor.nextElementSibling, 0); r.collapse(true); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+  if (!post.cover) { const first = ed.querySelector('img[data-local]'); if (first) { post.cover = 'local:' + first.dataset.local; renderCover(); } }
+  markCover();
+  touch(); updateCount();
+  if (done) toast(`사진 ${done}장을 넣었습니다`);
+}
+$('#filePick').addEventListener('change', (e) => { addImages(e.target.files); e.target.value = ''; });
+
+// 끌어다 놓기 — 화면 어디에 놓아도 됩니다
+let dragDepth = 0;
+const hasFiles = (e) => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+addEventListener('dragenter', (e) => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; $('#dropzone').hidden = false; });
+addEventListener('dragleave', (e) => { if (!hasFiles(e)) return; dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) $('#dropzone').hidden = true; });
+addEventListener('dragover', (e) => { if (hasFiles(e)) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+addEventListener('drop', (e) => {
+  if (!hasFiles(e)) return;
+  e.preventDefault(); dragDepth = 0; $('#dropzone').hidden = true;
+  let range = null;
+  if (ed.contains(e.target) || e.target === ed) {
+    if (document.caretRangeFromPoint) range = document.caretRangeFromPoint(e.clientX, e.clientY);
+    else if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(e.clientX, e.clientY); if (p) { range = document.createRange(); range.setStart(p.offsetNode, p.offset); } }
+  }
+  addImages(e.dataTransfer.files, range);
+});
+
+// 붙여 넣기 — 사진은 사진으로, 한글·워드·웹 문서는 서식을 정리해서
+ed.addEventListener('paste', (e) => {
+  const cd = e.clipboardData; if (!cd) return;
+  const files = [...cd.files].filter((f) => f.type.startsWith('image/'));
+  const html = cd.getData('text/html');
+  const text = cd.getData('text/plain');
+  if (files.length && !text.trim()) { e.preventDefault(); addImages(files); return; }
+  e.preventDefault();
+  let box;
+  if (html) {
+    const tmp = parseHTML(html.replace(/<!--[\s\S]*?-->/g, '').replace(/^[\s\S]*<body[^>]*>|<\/body>[\s\S]*$/gi, ''));
+    tmp.querySelectorAll('img').forEach((i) => { if (!/^https?:/.test(i.getAttribute('src') || '')) i.remove(); });
+    const md = td.turndown(sanitize(tmp).innerHTML);
+    box = mdToHtml(md);
+  } else {
+    // 일반 텍스트: 마크다운이면 서식대로, 아니면 줄마다 문단으로
+    const looksMd = /(^|\n)(#{1,3} |[-*] |\d+\. |> |\|.+\||!\[|```)|\*\*[^*]+\*\*|\[[^\]]+\]\(/.test(text);
+    if (looksMd) box = mdToHtml(text);
+    else {
+      box = document.createElement('div');
+      const lines = text.replace(/\r/g, '').split('\n');
+      if (lines.length === 1) { document.execCommand('insertText', false, text); return; }
+      for (const l of lines) { if (!l.trim()) continue; const p = document.createElement('p'); p.textContent = l; box.append(p); }
+    }
+  }
+  const frag = box.innerHTML;
+  if (!frag.trim()) return;
+  // 한 문단 안 짧은 붙여 넣기는 문단을 쪼개지 않음
+  const single = box.children.length === 1 && box.firstElementChild.tagName === 'P';
+  document.execCommand('insertHTML', false, single ? box.firstElementChild.innerHTML : frag);
+  normalize();
+  touch(); updateCount();
+});
+
+// 사진 누르면 도구 표시
+let selImg = null;
+function hideImgBar() { $('#imgbar').hidden = true; if (selImg) selImg.classList.remove('sel'); selImg = null; }
+ed.addEventListener('click', (e) => {
+  if (e.target.tagName === 'IMG') {
+    hideImgBar();
+    selImg = e.target; selImg.classList.add('sel');
+    const r = selImg.getBoundingClientRect();
+    const bar = $('#imgbar'); bar.hidden = false;
+    bar.style.top = (r.top + scrollY + 10) + 'px';
+    bar.style.left = Math.max(8, r.left + scrollX + r.width / 2 - bar.offsetWidth / 2) + 'px';
+    const isCover = post.cover && post.cover === imgRef(selImg);
+    bar.querySelector('[data-a=cover]').textContent = isCover ? '대표 사진 해제' : '대표 사진';
+  } else if (!e.target.closest('#imgbar')) hideImgBar();
+});
+document.addEventListener('click', (e) => { if (selImg && !ed.contains(e.target) && !e.target.closest('#imgbar')) hideImgBar(); });
+const imgRef = (img) => img.dataset.local ? 'local:' + img.dataset.local : (img.dataset.src || img.getAttribute('src'));
+
+$('#imgbar').addEventListener('click', (e) => {
+  const a = e.target.closest('button') && e.target.closest('button').dataset.a;
+  if (!a || !selImg) return;
+  const img = selImg, p = img.parentElement;
+  if (a === 'del') {
+    if (post.cover === imgRef(img)) { post.cover = ''; renderCover(); }
+    const em = img.nextElementSibling && img.nextElementSibling.tagName === 'EM' ? img.nextElementSibling : null;
+    if (em) em.remove();
+    img.remove();
+    if (p && p !== ed && !p.textContent.trim() && !p.querySelector('img')) p.remove();
+  } else if (a === 'cap') {
+    let em = img.nextElementSibling && img.nextElementSibling.tagName === 'EM' ? img.nextElementSibling : null;
+    const cur = em ? em.textContent : '';
+    const v = prompt('사진 설명 (사진 아래 작은 글씨로 표시됩니다. 지우려면 비워 두십시오)', cur);
+    if (v === null) return;
+    if (!v.trim()) { if (em) { if (em.previousSibling && em.previousSibling.nodeType === 3) em.previousSibling.remove(); em.remove(); } img.alt = ''; }
+    else {
+      if (!em) { em = document.createElement('em'); img.after(document.createTextNode('\n'), em); }
+      em.textContent = v.trim(); img.alt = v.trim();
+    }
+  } else if (a === 'cover') {
+    post.cover = post.cover === imgRef(img) ? '' : imgRef(img);
+    renderCover(); markCover();
+  }
+  hideImgBar(); touch(); updateCount();
+});
+
+async function coverURL() {
+  if (!post.cover) return '';
+  if (post.cover.startsWith('local:')) return imageURL(post.cover.slice(6));
+  return post.cover.startsWith('/') ? SITE + post.cover : post.cover;
+}
+async function renderCover() {
+  const box = $('#coverPick');
+  const u = await coverURL();
+  box.innerHTML = '';
+  if (!u) { box.innerHTML = '<span style="color:var(--ink-3)">지정 안 됨</span>'; return; }
+  const img = document.createElement('img'); img.src = u; box.append(img);
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'linkish'; b.textContent = '해제';
+  b.onclick = () => { post.cover = ''; renderCover(); markCover(); touch(); };
+  box.append(b);
+}
+function markCover() { ed.querySelectorAll('img').forEach((i) => i.classList.toggle('cover-mark', !!post && post.cover === imgRef(i))); }
+
+// ───────────────────────── 글 목록 ─────────────────────────
+function openDrawer(open) { $('#drawer').hidden = !open; $('#scrim').hidden = !open; if (open) renderList(); }
+$('#bMenu').addEventListener('click', () => openDrawer(true));
+$('#scrim').addEventListener('click', () => openDrawer(false));
+
+async function renderList() {
+  const posts = (await db.all('posts')).sort((a, b) => b.updatedAt - a.updatedAt);
+  const lst = $('#list'); lst.innerHTML = '';
+  if (!posts.length) { lst.innerHTML = '<p style="padding:16px;color:var(--ink-3)">아직 글이 없습니다.</p>'; return; }
+  for (const p of posts) {
+    const it = document.createElement('div');
+    it.className = 'item' + (post && p.id === post.id ? ' cur' : '');
+    const when = new Date(p.updatedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const pend = p.publishedAt && p.updatedAt > p.publishedAt + 2000;
+    it.innerHTML = `<div class="t"></div><div class="m">${p.publishedAt ? `<span class="tag pub">${p.draft ? '비공개로 올림' : '발행됨'}</span>` : '<span class="tag">작성 중</span>'}${pend ? '<span class="tag">고친 내용 미발행</span>' : ''}${when}</div><button class="x" title="이 기기에서 지우기">지우기</button>`;
+    it.querySelector('.t').textContent = p.title || '(제목 없음)';
+    it.addEventListener('click', async (e) => {
+      if (e.target.closest('.x')) {
+        e.stopPropagation();
+        const msg = p.publishedAt ? '이 기기에 저장된 사본만 지웁니다. 사이트에 올라간 글은 그대로 남습니다. 지울까요?' : '이 글은 아직 발행하지 않았습니다. 지우면 되살릴 수 없습니다. 지울까요?';
+        if (!confirm(msg)) return;
+        await db.del('posts', p.id); await db.delImages(p.id);
+        if (post && post.id === p.id) { clearTimeout(saveTimer); dirty = false; await load(newPost()); }
+        renderList(); return;
+      }
+      if (dirty) await save(true);
+      await load(p); openDrawer(false);
+    });
+    lst.append(it);
+  }
+}
+$('#bNew').addEventListener('click', async () => {
+  if (dirty) await save(true);
+  await load(newPost()); openDrawer(false); $('#title').focus();
+});
+
+// ───────────────────────── 앞머리(frontmatter) ─────────────────────────
+const yq = (s) => JSON.stringify(String(s)); // JSON 문자열은 YAML에서도 그대로 유효
+function buildMarkdown(paths) {
+  const body = post.body.replace(/\]\(local:([^)\s]+)\)/g, (m, n) => `](${paths[decodeURIComponent(n)] || 'local:' + n})`);
+  const fm = ['---', `title: ${yq(post.title)}`];
+  if (post.slug) fm.push(`slug: ${post.slug}`);
+  if (post.description) fm.push(`description: ${yq(post.description)}`);
+  fm.push(`date: ${post.date}`);
+  for (const [k, v] of Object.entries(post.extra || {})) fm.push(`${k}: ${v}`);
+  fm.push(`category: ${post.category}`);
+  if (post.cover) fm.push(`cover: ${post.cover.startsWith('local:') ? paths[post.cover.slice(6)] : post.cover}`);
+  fm.push(`draft: ${post.draft ? 'true' : 'false'}`, '---', '');
+  return fm.join('\n') + body + '\n';
+}
+
+function parseMarkdown(text) {
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  const out = { fm: {}, body: m ? m[2] : text };
+  if (!m) return out;
+  for (const line of m[1].split(/\r?\n/)) {
+    const k = line.match(/^([A-Za-z_][\w-]*):\s*(.*)$/);
+    if (!k) continue;
+    let v = k[2].trim();
+    if (/^".*"$/.test(v)) { try { v = JSON.parse(v); } catch { v = v.slice(1, -1); } }
+    else if (/^'.*'$/.test(v)) v = v.slice(1, -1).replace(/''/g, "'");
+    out.fm[k[1]] = v;
+  }
+  return out;
+}
+
+// 파일 이름 줄기: 2026-10-14-pf-loan  (주소가 없으면 시각으로)
+function stem() {
+  if (post.path) return post.path.split('/').pop().replace(/\.md$/, '');
+  if (post.slug) return `${post.date}-${post.slug}`;
+  const d = new Date(post.createdAt || post.updatedAt || Date.now());
+  return `${post.date}-${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+async function gatherFiles() {
+  collect();
+  const names = new Set();
+  for (const m of post.body.matchAll(/\]\(local:([^)\s]+)\)/g)) names.add(decodeURIComponent(m[1]));
+  if (post.cover && post.cover.startsWith('local:')) names.add(post.cover.slice(6));
+  const base = stem().replace(/[^\w.-]+/g, '-').replace(/-+/g, '-');
+  const paths = {}, images = [], missing = [];
+  for (const n of names) {
+    const blob = await db.get('images', post.id + '/' + n);
+    if (!blob) { missing.push(n); continue; }
+    const file = `${base}-${n}`;
+    paths[n] = `${IMG_URL}/${file}`;
+    images.push({ name: n, path: `${IMG_DIR}/${file}`, blob });
+  }
+  const mdPath = post.path || `${POST_DIR}/${stem()}.md`;
+  return { mdPath, md: buildMarkdown(paths), images, missing };
+}
+
+// ───────────────────────── GitHub 발행 ─────────────────────────
+const token = () => localStorage.getItem('write.token') || '';
+async function gh(path, opts = {}) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}${path}`, {
+    ...opts,
+    headers: { Authorization: `Bearer ${token()}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) },
+  });
+  if (!r.ok) {
+    let msg = ''; try { msg = (await r.json()).message; } catch {}
+    const e = new Error(r.status === 401 ? '토큰이 맞지 않거나 만료되었습니다. GitHub 연결 설정을 다시 하십시오.' : r.status === 403 || r.status === 404 ? '저장소에 쓸 권한이 없습니다. 토큰의 Contents 권한(Read and write)과 저장소 선택을 확인하십시오.' : `GitHub 오류 ${r.status}: ${msg}`);
+    e.status = r.status; throw e;
+  }
+  return r.status === 204 ? null : r.json();
+}
+function b64(blob) {
+  return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(blob); });
+}
+
+async function publishGitHub(files, onStep) {
+  const tree = [];
+  let i = 0;
+  for (const im of files.images) {
+    const key = im.path + ':' + im.blob.size;
+    if (post.uploaded && post.uploaded[im.path] === key) continue; // 이미 올린 사진은 건너뜀
+    onStep(`사진 올리는 중 ${++i}/${files.images.length}`);
+    const blob = await gh('/git/blobs', { method: 'POST', body: JSON.stringify({ content: await b64(im.blob), encoding: 'base64' }) });
+    tree.push({ path: im.path, mode: '100644', type: 'blob', sha: blob.sha, _key: key });
+  }
+  onStep('글 올리는 중');
+  const mdBlob = await gh('/git/blobs', { method: 'POST', body: JSON.stringify({ content: files.md, encoding: 'utf-8' }) });
+  tree.push({ path: files.mdPath, mode: '100644', type: 'blob', sha: mdBlob.sha });
+  const msg = `${post.publishedAt ? '글 수정' : '새 글'}: ${post.title || stem()}${post.draft ? ' (비공개)' : ''}`;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const ref = await gh(`/git/ref/heads/${BRANCH}`);
+    const head = await gh(`/git/commits/${ref.object.sha}`);
+    const t = await gh('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: head.tree.sha, tree: tree.map(({ _key, ...x }) => x) }) });
+    const c = await gh('/git/commits', { method: 'POST', body: JSON.stringify({ message: msg + '\n\n(이태호닷컴 글쓰기 도구에서 발행)', tree: t.sha, parents: [ref.object.sha] }) });
+    try { await gh(`/git/refs/heads/${BRANCH}`, { method: 'PATCH', body: JSON.stringify({ sha: c.sha }) }); }
+    catch (e) { if (e.status === 422 && attempt < 2) continue; throw e; }
+    post.uploaded = post.uploaded || {};
+    for (const x of tree) if (x._key) post.uploaded[x.path] = x._key;
+    return c.sha;
+  }
+}
+
+function liveURL() { return `${SITE}/writing/${post.slug || stem()}/`; }
+
+async function openPublish() {
+  if (dirty) await save(true);
+  collect();
+  const box = $('#pubBody');
+  const problems = [];
+  if (!post.title) problems.push('제목을 쓰십시오.');
+  if (!post.category) problems.push('카테고리를 고르십시오.');
+  if (!post.body.trim()) problems.push('본문이 비어 있습니다.');
+  if (!checkSlug()) problems.push('주소(영문)에 쓸 수 없는 글자가 있습니다.');
+  const files = await gatherFiles();
+  if (files.missing.length) problems.push(`이 기기에 없는 사진이 있습니다: ${files.missing.join(', ')}`);
+  const future = post.date > today();
+  box.innerHTML = `
+    <h2>${post.publishedAt ? '수정본 발행' : '발행'}</h2>
+    <div class="sum">
+      <div><b>제목</b> <span id="pT"></span></div>
+      <div><b>카테고리</b> ${post.category || '—'} · <b>발행일</b> ${post.date}${future ? ' <span class="warn">(미래 날짜)</span>' : ''}</div>
+      <div><b>사진</b> ${files.images.length}장 · <b>주소</b> <span id="pU"></span></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="pDraft" ${post.draft ? 'checked' : ''}> 비공개로 올리기 (사이트에 보이지 않고 저장소에만 보관)</label>
+    ${problems.length ? `<div class="warn">${problems.map((p) => '· ' + p).join('<br>')}</div>` : ''}
+    <div id="pMsg"></div>
+    <div class="row">
+      <button class="btn" value="cancel">닫기</button>
+      <button class="btn primary" type="button" id="pGo" ${problems.length ? 'disabled' : ''}>${navigator.onLine ? 'GitHub에 발행' : '인터넷 연결 필요'}</button>
+    </div>
+    <div class="alt">
+      <p>다른 방법</p>
+      <button class="btn" type="button" id="pZip">파일로 내려받기 (.zip — 글 + 사진)</button>
+      <button class="btn" type="button" id="pCopy">마크다운 복사 (본문만 다른 곳에 붙여 넣을 때)</button>
+    </div>`;
+  box.querySelector('#pT').textContent = post.title || '—';
+  box.querySelector('#pU').textContent = liveURL().replace('https://', '');
+  box.querySelector('#pDraft').onchange = (e) => { post.draft = e.target.checked; save(true); };
+  const go = box.querySelector('#pGo');
+  if (!navigator.onLine) go.disabled = true;
+  const msg = box.querySelector('#pMsg');
+  go.onclick = async () => {
+    if (!token()) { $('#dlgPublish').close(); openSettings('먼저 GitHub 연결을 설정하십시오. 처음 한 번만 하면 됩니다.'); return; }
+    go.disabled = true;
+    try {
+      const f = await gatherFiles();
+      await publishGitHub(f, (s) => { msg.innerHTML = `<p>${s}…</p>`; });
+      post.path = f.mdPath; post.publishedAt = Date.now() + 1500;
+      await db.put('posts', post); lastSaved = post.updatedAt; setStatus();
+      msg.innerHTML = `<p class="okmsg">발행했습니다. 1~2분 뒤 사이트에 반영됩니다.</p>${post.draft ? '<p>비공개로 올렸으므로 사이트에는 보이지 않습니다.</p>' : `<p><a href="${liveURL()}" target="_blank" rel="noopener">${liveURL().replace('https://', '')}</a></p>`}`;
+      go.textContent = '완료';
+    } catch (e) {
+      msg.innerHTML = `<p class="warn"></p>`; msg.firstChild.textContent = e.message || String(e);
+      go.disabled = false;
+    }
+  };
+  box.querySelector('#pZip').onclick = async () => {
+    const f = await gatherFiles();
+    const entries = [{ path: f.mdPath, data: new TextEncoder().encode(f.md) }];
+    for (const im of f.images) entries.push({ path: im.path, data: new Uint8Array(await im.blob.arrayBuffer()) });
+    download(zip(entries), `${stem()}.zip`);
+    msg.innerHTML = '<p>압축을 풀면 <b>src</b>·<b>public</b> 폴더가 나옵니다. GitHub 저장소 첫 화면에서 Add file → Upload files로 이 두 폴더를 끌어다 놓고 Commit하면 발행됩니다.</p>';
+  };
+  box.querySelector('#pCopy').onclick = async () => {
+    const f = await gatherFiles();
+    try { await navigator.clipboard.writeText(f.md); toast('마크다운을 복사했습니다' + (f.images.length ? ' — 사진은 따로 올려야 합니다' : ''), 3500); }
+    catch { toast('복사하지 못했습니다. 원문 보기에서 직접 복사하십시오', 3500); }
+  };
+  $('#dlgPublish').showModal();
+}
+$('#bPublish').addEventListener('click', openPublish);
+
+// ───────────────────────── 설정 ─────────────────────────
+function openSettings(note) {
+  $('#token').value = token();
+  $('#tokMsg').innerHTML = note ? `<p class="warn">${note}</p>` : token() ? '<p class="okmsg">연결되어 있습니다.</p>' : '';
+  $('#dlgSettings').showModal();
+}
+$('#bSettings').addEventListener('click', () => { openDrawer(false); openSettings(); });
+$('#bTokDel').addEventListener('click', () => { localStorage.removeItem('write.token'); $('#token').value = ''; $('#tokMsg').innerHTML = '<p>토큰을 지웠습니다.</p>'; });
+$('#bTokSave').addEventListener('click', async () => {
+  const v = $('#token').value.trim();
+  if (!v) return;
+  localStorage.setItem('write.token', v);
+  $('#tokMsg').innerHTML = '<p>확인 중…</p>';
+  try {
+    const r = await gh('');
+    if (r.permissions && r.permissions.push === false) throw new Error('읽기만 가능한 토큰입니다. Contents 권한을 Read and write로 바꾸십시오.');
+    $('#tokMsg').innerHTML = '<p class="okmsg">연결되었습니다. 이제 발행 버튼으로 바로 올릴 수 있습니다.</p>';
+  } catch (e) { $('#tokMsg').innerHTML = '<p class="warn"></p>'; $('#tokMsg p').textContent = e.message; }
+});
+
+// ───────────────────────── 사이트 글 불러오기 ─────────────────────────
+function fromB64(s) { const bin = atob(s.replace(/\n/g, '')); return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))); }
+$('#bRemote').addEventListener('click', async () => {
+  openDrawer(false);
+  if (!token()) return openSettings('사이트 글을 불러오려면 먼저 GitHub 연결을 설정하십시오.');
+  if (!navigator.onLine) return toast('인터넷 연결이 필요합니다');
+  const box = $('#remoteList'); box.innerHTML = '<p>불러오는 중…</p>';
+  $('#dlgRemote').showModal();
+  try {
+    const list = (await gh(`/contents/${POST_DIR}?ref=${BRANCH}`)).filter((f) => f.name.endsWith('.md'));
+    const items = await Promise.all(list.map(async (f) => {
+      const c = await gh(`/contents/${encodeURI(f.path)}?ref=${BRANCH}`);
+      const text = fromB64(c.content); const { fm } = parseMarkdown(text);
+      return { f, text, fm };
+    }));
+    items.sort((a, b) => String(b.fm.date).localeCompare(String(a.fm.date)));
+    const locals = await db.all('posts');
+    box.innerHTML = '';
+    for (const it of items) {
+      const d = document.createElement('div'); d.className = 'item';
+      d.innerHTML = `<div class="t"></div><div class="m">${it.fm.draft === 'true' ? '<span class="tag">비공개</span>' : ''}${it.fm.category || ''} · ${it.fm.date || ''}</div>`;
+      d.querySelector('.t').textContent = it.fm.title || it.f.name;
+      d.onclick = async () => {
+        const exist = locals.find((p) => p.path === it.f.path);
+        if (exist && exist.updatedAt > exist.publishedAt + 2000 && !confirm('이 기기에 아직 발행하지 않은 수정본이 있습니다. 사이트 버전으로 덮어쓸까요?')) return;
+        if (dirty) await save(true);
+        const { fm, body } = parseMarkdown(it.text);
+        const known = ['title', 'slug', 'description', 'date', 'category', 'cover', 'draft'];
+        const extra = {}; for (const [k, v] of Object.entries(fm)) if (!known.includes(k)) extra[k] = v;
+        const p = Object.assign(exist || newPost(), {
+          title: fm.title || '', slug: fm.slug || '', description: fm.description || '', date: String(fm.date || today()).slice(0, 10),
+          category: fm.category || '', cover: fm.cover || '', draft: fm.draft === 'true', body: body.trim(), path: it.f.path, extra,
+        });
+        p.updatedAt = Date.now(); p.publishedAt = p.updatedAt + 1500;
+        await db.put('posts', p); await load(p); $('#dlgRemote').close(); toast('불러왔습니다');
+      };
+      box.append(d);
+    }
+    if (!items.length) box.innerHTML = '<p>글이 없습니다.</p>';
+  } catch (e) { box.innerHTML = '<p class="warn"></p>'; box.firstChild.textContent = e.message; }
+});
+
+// ───────────────────────── zip 만들기(압축 없이 묶기) ─────────────────────────
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = (d) => { let c = 0xffffffff; for (let i = 0; i < d.length; i++) c = CRC[(c ^ d[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+function zip(entries) {
+  const enc = new TextEncoder(), parts = [], central = [];
+  let off = 0;
+  const now = new Date();
+  const dt = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xffff;
+  const dd = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xffff;
+  for (const e of entries) {
+    const name = enc.encode(e.path), crc = crc32(e.data), size = e.data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, dt, true); lh.setUint16(12, dd, true); lh.setUint32(14, crc, true); lh.setUint32(18, size, true); lh.setUint32(22, size, true);
+    lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    parts.push(lh, name, e.data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, dt, true); ch.setUint16(14, dd, true); ch.setUint32(16, crc, true); ch.setUint32(20, size, true); ch.setUint32(24, size, true);
+    ch.setUint16(28, name.length, true); ch.setUint32(42, off, true);
+    central.push(ch, name);
+    off += 30 + name.length + size;
+  }
+  const csize = central.reduce((s, p) => s + (p.byteLength ?? p.length), 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true);
+  end.setUint32(12, csize, true); end.setUint32(16, off, true);
+  return new Blob([...parts, ...central, end], { type: 'application/zip' });
+}
+function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
+
+// ───────────────────────── 알림 ─────────────────────────
+let toastT;
+function toast(t, ms = 2200) { const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), ms); }
+
+// ───────────────────────── 시작 ─────────────────────────
+addEventListener('beforeunload', () => { if (dirty) { collect(); post.updatedAt = Date.now(); db.put('posts', post); } });
+document.addEventListener('visibilitychange', () => { if (document.hidden && dirty) save(true); });
+
+(async () => {
+  const last = localStorage.getItem('write.last');
+  const p = (last && (await db.get('posts', last))) || newPost();
+  await load(p);
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('/write/sw.js', { scope: '/write/' }).catch(() => {});
+})();
+</script>
+</body>
+</html>
