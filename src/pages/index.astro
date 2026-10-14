@@ -3,17 +3,17 @@ import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
 import { getPosts, getWorks } from '../lib/posts';
 import { SITE } from '../site';
+import { getEntry, render } from 'astro:content';
+
+const home = (await getEntry('pages', 'home'))!;
+const { Content: Intro } = await render(home);
 
 const posts = (await getPosts()).slice(0, 5);
 const works = (await getWorks()).slice(0, 3);
 ---
 <Base>
-  <p class="intro">{SITE.tagline}</p>
-  <p>
-    변호사로 일하며 계약과 금융의 구조를 짜고, 쉬는 시간에는 곡을 만들고 사진을 찍습니다.
-    이곳에는 그 일들에 대해 쓴 글과 만든 것들을 모아 둡니다.{' '}
-    <a href="/about/">더 보기</a>
-  </p>
+  <p class="intro">{home.data.tagline ?? SITE.tagline}</p>
+  <div class="intro-body"><Intro /></div>
 
   <h2 class="section-label">최근 글</h2>
   {posts.length ? <PostList posts={posts} /> : <p class="meta">아직 글이 없습니다.</p>}

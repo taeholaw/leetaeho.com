@@ -100,3 +100,40 @@ content:
         type: rich-text
         options:
           format: markdown
+
+  - name: home
+    label: 홈 소개문
+    type: file
+    path: src/content/pages/home.md
+    format: yaml-frontmatter
+    fields:
+      - name: title
+        label: (고정값 — 바꾸지 마십시오)
+        type: string
+        default: Home
+      - name: tagline
+        label: 첫 줄 문구
+        type: string
+      - name: body
+        label: 소개 문단
+        type: rich-text
+        options:
+          format: markdown
+
+  - name: about
+    label: About 페이지
+    type: file
+    path: src/content/pages/about.md
+    format: yaml-frontmatter
+    fields:
+      - name: title
+        label: 페이지 제목
+        type: string
+      - name: description
+        label: 검색 결과 설명문
+        type: text
+      - name: body
+        label: 본문
+        type: rich-text
+        options:
+          format: markdown

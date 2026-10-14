@@ -32,4 +32,14 @@ const work = defineCollection({
   }),
 });
 
-export const collections = { writing, work };
+// 고정 페이지 (홈 소개문, About)
+const pages = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/pages' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    tagline: z.string().optional(),
+  }),
+});
+
+export const collections = { writing, work, pages };

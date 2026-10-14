@@ -116,7 +116,9 @@ h1 { font-size: 30px; margin: 0 0 12px; text-wrap: balance; }
 
 /* 홈 */
 .intro { text-wrap: balance; font-family: var(--serif); font-size: 24px; line-height: 1.6; margin: 0 0 20px; letter-spacing: -0.01em; }
-.intro + p { color: var(--ink-2); margin: 0; }
+.intro-body { color: var(--ink-2); }
+.intro-body p { margin: 0 0 0.8em; }
+.intro-body a { color: inherit; }
 
 /* 작업 목록 */
 .works { list-style: none; padding: 0; margin: 0; display: grid; gap: 36px; }

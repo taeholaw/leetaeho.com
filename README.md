@@ -16,7 +16,8 @@
 ## 자주 고치는 곳
 
 - 이름·태그라인·이메일·뉴스레터 주소: `src/site.ts`
-- About 본문: `src/pages/about.astro`
+- 홈 소개문: `src/content/pages/home.md` (편집 화면의 "홈 소개문")
+- About 본문: `src/content/pages/about.md` (편집 화면의 "About 페이지")
 - 색·글꼴·여백: `src/styles/global.css`
 - 글: `src/content/writing/*.md`
 - 작업: `src/content/work/*.md`
