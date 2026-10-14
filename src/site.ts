@@ -8,8 +8,7 @@ export const SITE = {
   description:
     '변호사 이태호의 개인 사이트. 법과 금융의 구조, 음악과 사진 작업, 그리고 일하는 방식에 대한 글을 씁니다.',
   email: 'hello@leetaeho.com',
-  // 메일리 구독 페이지 주소 — 메일리 뉴스레터 개설 후 실제 주소로 바꿉니다.
-  newsletter: 'https://maily.so/',
+  newsletter: 'https://maily.so/leetaeho',
   links: [
     // { label: 'LinkedIn', href: 'https://www.linkedin.com/in/...' },
   ],
