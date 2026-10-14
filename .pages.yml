@@ -38,7 +38,7 @@ content:
         type: select
         required: true
         options:
-          values: [실무 노트, AI × 법무, 에세이]
+          values: [실무노트, AI, 에세이]
       - name: cover
         label: 대표 사진 (선택)
         type: image

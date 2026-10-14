@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 const { post, newer, older } = Astro.props;
 const { Content } = await render(post);
 const d = post.data;
-const isPractice = d.category === '실무 노트' || d.category === 'AI × 법무';
+const isPractice = d.category === '실무노트' || d.category === 'AI';
 
 const jsonLd = {
   '@context': 'https://schema.org',

@@ -14,7 +14,7 @@ export const SITE = {
   ],
 };
 
-export const CATEGORIES = ['실무 노트', 'AI × 법무', '에세이'] as const;
+export const CATEGORIES = ['실무노트', 'AI', '에세이'] as const;
 
 export const NAV = [
   { label: 'Home', href: '/' },
@@ -25,4 +25,4 @@ export const NAV = [
 
 // 카테고리 이름 → 주소용 영문 슬러그
 export const categorySlug = (c: string) =>
-  ({ '실무 노트': 'practice', 'AI × 법무': 'ai-law', 에세이: 'essay' } as Record<string, string>)[c] ?? 'etc';
+  ({ 실무노트: 'practice', AI: 'ai', 에세이: 'essay' } as Record<string, string>)[c] ?? 'etc';

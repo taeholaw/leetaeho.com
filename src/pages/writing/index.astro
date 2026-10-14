@@ -7,7 +7,7 @@ import { CATEGORIES, categorySlug } from '../../site';
 const posts = await getPosts();
 const years = [...new Set(posts.map((p) => p.data.date.getFullYear()))];
 ---
-<Base title="Writing" description="이태호가 쓴 글 — 실무 노트, AI × 법무, 에세이.">
+<Base title="Writing" description="이태호가 쓴 글 — 실무노트, AI, 에세이.">
   <h1>Writing</h1>
   <nav class="filters" aria-label="카테고리">
     <a href="/writing/" aria-current="page">전체</a>

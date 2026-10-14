@@ -3,7 +3,7 @@ title: (예시) 글쓰기 서식 모음
 description: 공개되지 않는 예시 글입니다. 제목·목록·인용·표·사진을 넣는 방법을 보여 줍니다.
 date: 2026-11-01
 slug: writing-guide
-category: 실무 노트
+category: 실무노트
 draft: true
 ---
 
