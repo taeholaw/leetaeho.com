@@ -22,7 +22,7 @@ const pagefind = () => ({
 export default defineConfig({
   site: 'https://leetaeho.com',
   trailingSlash: 'always',
-  integrations: [sitemap(), optimizeImages(), pagefind()],
+  integrations: [sitemap({ filter: (page) => !page.includes('/admin') }), optimizeImages(), pagefind()],
   markdown: {
     shikiConfig: { theme: 'github-light' },
   },

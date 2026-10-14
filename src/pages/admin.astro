@@ -1,0 +1,16 @@
+---
+// leetaeho.com/admin/ → 글쓰기 화면(Pages CMS)으로 바로 이동
+const target = 'https://app.pagescms.org/taeholaw/leetaeho.com/main/collection/writing';
+---
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <title>글쓰기 화면으로 이동</title>
+  </head>
+  <body>
+    <p>글쓰기 화면으로 이동합니다. 자동으로 넘어가지 않으면 <a href={target}>여기</a>를 누르십시오.</p>
+  </body>
+</html>
